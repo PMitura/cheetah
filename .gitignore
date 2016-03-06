@@ -26,3 +26,7 @@
 *.exe
 *.out
 *.app
+
+# Vim environment files
+tags
+*.taghl
