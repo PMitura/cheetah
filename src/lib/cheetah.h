@@ -4,5 +4,5 @@
 
 namespace ch
 {
-    void hello();
+void hello();
 }
