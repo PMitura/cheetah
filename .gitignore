@@ -30,3 +30,9 @@
 # Vim environment files
 tags
 *.taghl
+.ycm_extra_conf.py
+.ycm_extra_conf.pyc
+
+# Target build
+bin
+build
