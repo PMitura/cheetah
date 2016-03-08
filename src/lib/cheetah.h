@@ -12,6 +12,9 @@ namespace ch
 class PointsND
 {
     public:
+        /**
+         * Constructor 
+         */
         PointsND(int dim);
 
         /** Dimension getter */

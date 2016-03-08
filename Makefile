@@ -14,12 +14,24 @@ CFLAGS := -g -Wall -fopenmp -pedantic -std=c++11
 LIB :=
 INC := -I src
 
+TESTDIR := tests
+TESTSRCS := $(shell find $(TESTDIR) -type f -name *.$(SRCEXT))
+TESTOBJS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/$(TESTDIR)/%,$(TESTSRCS:.$(SRCEXT)=.o))
+TESTTARGET := bin/tests
+TESTLIB := -lgtest -lgtest_main -lpthread
+TESTFLAG := 
+
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
 	$(CC) $^ -o $(TARGET) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(MKBDIR)
+	$(CC) $(CFLAGS) $(TESTFLAG) $(INC) -c -o $@ $<
+
+$(BUILDDIR)/$(TESTDIR)/%.o: $(TESTDIR)/%.$(SRCEXT)
+	@mkdir -p $(BUILDDIR)/$(TESTDIR)
+	$(eval TESTFLAG := -DTEST_MAIN)
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
@@ -27,6 +39,11 @@ clean:
 	rm -rf $(BUILDDIR) $(TARGET)
 
 run:
-	bin/$(NAME)
+	$(TARGET)
+
+test: $(TESTOBJS) $(OBJECTS)
+	@echo " Running tests..."
+	$(CC) $^ -o $(TESTTARGET) $(LIB) $(TESTLIB)
+	$(TESTTARGET)
 
 .PHONY: clean
