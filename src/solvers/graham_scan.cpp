@@ -1,11 +1,11 @@
-#include "src/solvers/graham_scan_2d.h"
+#include "solvers/graham_scan_2d.h"
 
 namespace ch
 {
 
-points2D solve(const points2D& inputSet)
+Points2D solve(const Points2D& inputSet)
 {
-
+    return Points2D();
 }
 
 }

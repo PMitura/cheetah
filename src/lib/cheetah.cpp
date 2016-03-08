@@ -3,9 +3,12 @@
 namespace ch
 {
 
-void hello()
-{
-    std::cout << "Hello World!" << std::endl;
-}
+PointsND::PointsND(int dim)
+    : dimension_(dim)
+{}
+
+Points2D::Points2D()
+    : PointsND(2)
+{}
 
 }

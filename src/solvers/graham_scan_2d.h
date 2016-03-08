@@ -8,7 +8,7 @@ namespace ch
 class GrahamScan2D : public Solver2D
 {
     public:
-        points2D solve(const points2D& inputSet);
+        Points2D solve(const Points2D& inputSet);
 };
 
 }
