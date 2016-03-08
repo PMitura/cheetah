@@ -8,7 +8,7 @@ namespace ch {
 class JarvisScan2D : public Solver2D
 {
     protected:
-        Points2D algorithm(const data_t& input);
+        Points2D& solve(const Points2D& input, Points2D& output);
 };
 
 }

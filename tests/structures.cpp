@@ -13,7 +13,7 @@ TEST(PointsNDTest, Constructor)
 TEST(PointsNDTest, PointAddition)
 {
     ch::PointsND a(3);
-    std::vector<double> x = {1, 2, 3}, 
+    std::vector<double> x = {1, 2, 3},
                         y = {0.1, 0, -5.0},
                         z = {1, 2, 3, 4};
     a.add(x);

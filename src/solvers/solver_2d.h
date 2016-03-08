@@ -18,13 +18,7 @@ class Solver2D
          * @param inputSet Input data set
          * @return Convex hull of input data set.
          */
-        virtual Points2D solve(const PointsND& inputSet);
-
-    protected:
-        /**
-         * Internal represenation of algorithm for finding the convex hull
-         */
-        virtual Points2D algorithm(const data_t& input) = 0;
+        virtual Points2D& solve(const Points2D& input, Points2D& output) = 0;
 };
 
 }
