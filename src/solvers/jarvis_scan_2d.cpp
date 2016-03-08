@@ -7,11 +7,14 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
     std::vector<double> nextPoint;
     const data_t& inputData = input.getData();
 
-    for (int i = 0; i < inputData.size(); i++) {
-
+    // find min X
+    int minIndex = 0;
+    for (int i = 1; i < inputData.size(); i++) {
+        if (inputData[i][0] < inputData[minIndex][0]) {
+            minIndex = i;
+        }
     }
-
-    int i = 0;
+    nextPoint = inputData[minIndex];
 
     return output;
 }
