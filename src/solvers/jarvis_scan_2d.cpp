@@ -2,18 +2,6 @@
 
 namespace ch {
 
-
-inline double JarvisScan2D::polarAngle(double ax, double ay, 
-                                       double bx, double by) const
-{
-    return atan2(bx - ax, by - ay);
-    /*
-    if (fabs(ang) < EPS)
-        return dist(pivot, a) < dist(pivot, b);
-    return ang < EPS;
-    */
-}
-
 Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
 {
     std::vector<double> currPoint;
@@ -23,7 +11,7 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
     int minIndex = 0,
         currIndex,
         nextIndex;
-    for (int i = 1; i < inputData.size(); i++) {
+    for (unsigned i = 1; i < inputData.size(); i++) {
         if (inputData[i][1] < inputData[minIndex][1]) {
             minIndex = i;
         }
@@ -34,11 +22,23 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
     do {
         currPoint = inputData[currIndex];
         output.add(currPoint);
-        nextIndex = 0;
-        for (int i = 1; i < inputData.size(); i++) {
-            if (i != currIndex) {
-                nextIndex = i;
+
+        // avoid checking with self
+        if (currIndex == 0)
+            nextIndex = 1;
+        else
+            nextIndex = 0;
+        double maxAngle = polarAngle(inputData[currIndex][0],
+                                     inputData[currIndex][1],
+                                     inputData[nextIndex][0],
+                                     inputData[nextIndex][1]);
+
+        // check all n - 1 points, find max polar angle
+        for (unsigned i = nextIndex + 1; i < inputData.size(); i++) {
+            if (i == currIndex) {
+                continue;
             }
+            nextIndex = i;
         }
         currIndex = nextIndex;
     } while (currIndex != minIndex);
