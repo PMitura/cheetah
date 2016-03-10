@@ -1,56 +1,62 @@
 #include "jarvis_scan_2d.h"
 
-namespace ch {
+namespace ch
+{
 
 Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
 {
     std::vector<double> currPoint;
     const data_t& inputData = input.getData();
 
-    // find point with max Y (min X in case of tie)
-    unsigned minIndex = 0,
+    unsigned maxIndex = 0,
              currIndex,
              nextIndex;
+
+    // find point with max Y (min X in case of tie)
     for (unsigned i = 1; i < inputData.size(); i++) {
-        double dif = inputData[i][1] - inputData[minIndex][1];
+        double dif = inputData[i][1] - inputData[maxIndex][1];
         if (fabs(dif) <= EPS) {
-            if (inputData[i][0] > inputData[minIndex][0]) {
-                minIndex = i;
+            if (inputData[i][0] > inputData[maxIndex][0]) {
+                maxIndex = i;
             }
         } else if (dif > EPS) {
-            minIndex = i;
+            maxIndex = i;
         }
     }
 
     // find the rest of points
-    currIndex = minIndex;
-    double currAngle = 0, nextAngle, relAngle;
+    currIndex = maxIndex;
+    double currAngle = 0, nextAngle, minAngle, relAngle, pureAngle, nextPureAngle;
     do {
-        std::cout << "pt " << inputData[currIndex][0] << ", " << inputData[currIndex][1] << std::endl;
+        // std::cout << "pt " << inputData[currIndex][0] << ", " << inputData[currIndex][1] << " id " << currIndex << std::endl;
         currPoint = inputData[currIndex];
         output.add(currPoint);
 
         // avoid setting same point as next
         nextIndex = !currIndex;
-        double minAngle = polarAngle(inputData[currIndex][0],
-                                     inputData[currIndex][1],
-                                     inputData[nextIndex][0],
-                                     inputData[nextIndex][1])
-                          + currAngle;
+        nextPureAngle = polarAngle(inputData[currIndex][0],
+                                   inputData[currIndex][1],
+                                   inputData[nextIndex][0],
+                                   inputData[nextIndex][1]);
+        minAngle = nextPureAngle + 2*PI - currAngle;
+        if (minAngle > 2*PI + EPS) {
+            minAngle -= 2*PI;
+        }
 
-        // check all n - 1 points, find min polar angle
+        // check all remaining n - 1 points, find min polar angle
         for (unsigned i = 0; i < inputData.size(); i++) {
             if (i == currIndex) {
                 continue;
             }
-            nextAngle = polarAngle(inputData[currIndex][0],
+            pureAngle = polarAngle(inputData[currIndex][0],
                                    inputData[currIndex][1],
                                    inputData[i][0],
-                                   inputData[i][1])
-                        + currAngle;
-            if (nextAngle > 2*PI - EPS)
+                                   inputData[i][1]);
+            nextAngle = pureAngle + 2*PI - currAngle;
+            if (nextAngle > 2*PI + EPS) {
                 nextAngle -= 2*PI;
-            std::cout << i << ": " << nextAngle << std::endl;
+            }
+            // std::cout << i << ": " << nextAngle << std::endl;
             relAngle = minAngle - nextAngle;
             if (fabs(relAngle) <= EPS) {
                 // exclude collinear points
@@ -64,16 +70,18 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
                          inputData[nextIndex][0],
                          inputData[nextIndex][1])) {
                     minAngle = nextAngle;
+                    nextPureAngle = pureAngle;
                     nextIndex = i;
                 }
             } else if (relAngle > EPS) {
                 minAngle = nextAngle;
+                nextPureAngle = pureAngle;
                 nextIndex = i;
             }
         }
-        currAngle = nextAngle;
+        currAngle = nextPureAngle;
         currIndex = nextIndex;
-    } while (currIndex != minIndex);
+    } while (currIndex != maxIndex);
 
     return output;
 }
