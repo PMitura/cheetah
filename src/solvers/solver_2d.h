@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <lib/cheetah.h>
+#include <lib/structures.h>
 
 namespace ch
 {

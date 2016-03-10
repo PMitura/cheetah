@@ -6,7 +6,8 @@
 namespace ch
 {
 
-typedef std::vector<std::vector<double>> data_t;
+typedef std::vector<double> point_t;
+typedef std::vector<point_t> data_t;
 
 /**
  * General class for input or output point set
@@ -24,7 +25,7 @@ class PointsND
         /**
          * Add a point to the set
          */
-        bool add(std::vector<double> point);
+        bool add(point_t& point);
 
         /** Get number of points in set */
         inline int getSize() const { return data_.size(); }

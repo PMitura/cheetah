@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lib/cheetah.h"
+#include "lib/structures.h"
 #include "lib/geometry.h"
 #include "solvers/solver_2d.h"
 

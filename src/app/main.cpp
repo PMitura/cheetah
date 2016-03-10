@@ -1,5 +1,5 @@
 #include <iostream>
-#include "lib/cheetah.h"
+#include "lib/structures.h"
 
 using namespace std;
 

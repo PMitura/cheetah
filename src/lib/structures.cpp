@@ -1,4 +1,4 @@
-#include "lib/cheetah.h"
+#include "lib/structures.h"
 
 namespace ch
 {
@@ -7,7 +7,7 @@ PointsND::PointsND(unsigned int dim)
     : dimension_(dim)
 {}
 
-bool PointsND::add(std::vector<double> point)
+bool PointsND::add(point_t& point)
 {
     if (point.size() != dimension_)
         return false;

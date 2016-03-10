@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "lib/cheetah.h"
+#include "lib/structures.h"
 
 TEST(PointsNDTest, Constructor)
 {
