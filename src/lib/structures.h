@@ -25,7 +25,7 @@ class PointsND
         /**
          * Add a point to the set
          */
-        bool add(point_t& point);
+        bool add(point_t point);
 
         /** Get number of points in set */
         inline int getSize() const { return data_.size(); }

@@ -7,59 +7,71 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
     std::vector<double> currPoint;
     const data_t& inputData = input.getData();
 
-    // find point with min Y
+    // find point with max Y (min X in case of tie)
     unsigned minIndex = 0,
              currIndex,
              nextIndex;
     for (unsigned i = 1; i < inputData.size(); i++) {
-        if (inputData[i][1] < inputData[minIndex][1]) {
+        double dif = inputData[i][1] - inputData[minIndex][1];
+        if (fabs(dif) <= EPS) {
+            if (inputData[i][0] > inputData[minIndex][0]) {
+                minIndex = i;
+            }
+        } else if (dif > EPS) {
             minIndex = i;
         }
     }
 
     // find the rest of points
     currIndex = minIndex;
+    double currAngle = 0, nextAngle, relAngle;
     do {
+        std::cout << "pt " << inputData[currIndex][0] << ", " << inputData[currIndex][1] << std::endl;
         currPoint = inputData[currIndex];
         output.add(currPoint);
 
-        // avoid checking with self
+        // avoid setting same point as next
         nextIndex = !currIndex;
-        double maxAngle = polarAngle(inputData[currIndex][0],
+        double minAngle = polarAngle(inputData[currIndex][0],
                                      inputData[currIndex][1],
                                      inputData[nextIndex][0],
-                                     inputData[nextIndex][1]);
+                                     inputData[nextIndex][1])
+                          + currAngle;
 
-        // check all n - 1 points, find max polar angle
-        double nextAngle, relAngle;
-        for (unsigned i = nextIndex + 1; i < inputData.size(); i++) {
+        // check all n - 1 points, find min polar angle
+        for (unsigned i = 0; i < inputData.size(); i++) {
             if (i == currIndex) {
                 continue;
             }
             nextAngle = polarAngle(inputData[currIndex][0],
                                    inputData[currIndex][1],
                                    inputData[i][0],
-                                   inputData[i][1]);
-            relAngle = nextAngle - maxAngle;
-            if (fabs(relAngle) < EPS) {
-                // collinear points
+                                   inputData[i][1])
+                        + currAngle;
+            if (nextAngle > 2*PI - EPS)
+                nextAngle -= 2*PI;
+            std::cout << i << ": " << nextAngle << std::endl;
+            relAngle = minAngle - nextAngle;
+            if (fabs(relAngle) <= EPS) {
+                // exclude collinear points
                 if (dist(inputData[currIndex][0],
                          inputData[currIndex][1],
                          inputData[i][0],
                          inputData[i][1])
-                    <
+                    >
                     dist(inputData[currIndex][0],
                          inputData[currIndex][1],
                          inputData[nextIndex][0],
                          inputData[nextIndex][1])) {
-                    maxAngle = nextAngle;
+                    minAngle = nextAngle;
                     nextIndex = i;
                 }
-            } else if (relAngle < EPS) {
-                maxAngle = nextAngle;
+            } else if (relAngle > EPS) {
+                minAngle = nextAngle;
                 nextIndex = i;
             }
         }
+        currAngle = nextAngle;
         currIndex = nextIndex;
     } while (currIndex != minIndex);
 

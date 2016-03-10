@@ -7,7 +7,7 @@ PointsND::PointsND(unsigned int dim)
     : dimension_(dim)
 {}
 
-bool PointsND::add(point_t& point)
+bool PointsND::add(point_t point)
 {
     if (point.size() != dimension_)
         return false;

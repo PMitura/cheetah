@@ -20,6 +20,8 @@ void testSolver2D(ch::Solver2D& solver)
 {
     ch::Points2D small, smallResult;
     small.add({0, 0});
+    small.add({1, 0});
+    small.add({0, 1});
     small.add({2, 0});
     small.add({0, 2});
     small.add({2, 2});
