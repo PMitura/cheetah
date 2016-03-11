@@ -26,6 +26,28 @@ bool Generator2D::genUniformCircle(long long n, long long h,
     return true;
 }
 
+bool Generator2D::genRandomCircle(long long n, long long h,
+                                  double radius, Points2D& points)
+{
+    if (n < h || n <= 0 || radius < EPS || h <= 1) {
+        return false;
+    }
+
+    // generate points on circle (= on hull) randomly
+    srand(time(NULL));
+    for (long long i = 0; i < h; i++) {
+        double coef = ((double) rand() / RAND_MAX) * (2*PI);
+        double px = radius * cos(i * coef),
+               py = radius * sin(i * coef);
+        points.add({px, py});
+    }
+
+    // remaining interior points
+    generateInCombination(n - h, std::min(h, (long long) 50), points);
+
+    return true;
+}
+
 void Generator2D::generateInCombination(long long n, int of, Points2D& points)
 {
     srand(time(NULL));

@@ -30,7 +30,7 @@ TEST(Points2DTest, Constructor)
     EXPECT_EQ(2, a.getDimension());
 }
 
-TEST(Generator2DTest, Edge)
+TEST(Generator2DTestUniform, EdgeCases)
 {
     ch::Generator2D generator;
     ch::Points2D points;
@@ -49,3 +49,19 @@ TEST(Generator2DTest, Edge)
     EXPECT_TRUE(generator.genUniformCircle(100000, 50000, 100000, points));
     EXPECT_EQ(100000, points.getSize());
 }
+
+TEST(Generator2DTestRandom, EdgeCases)
+{
+    ch::Generator2D generator;
+    ch::Points2D points;
+
+    EXPECT_TRUE(generator.genRandomCircle(100, 10, 100, points));
+    EXPECT_EQ(100, points.getSize());
+    points.clear();
+    EXPECT_TRUE(generator.genRandomCircle(500, 250, 100, points));
+    EXPECT_EQ(500, points.getSize());
+    points.clear();
+    EXPECT_TRUE(generator.genRandomCircle(100000, 50000, 100000, points));
+    EXPECT_EQ(100000, points.getSize());
+}
+

@@ -73,6 +73,10 @@ void testSingleGen(long long n, long long h, double radius,
     generator.genUniformCircle(n, h, radius, genSet);
     solver.solve(genSet, output);
     EXPECT_EQ(h, output.getSize());
+    genSet.clear(); output.clear();
+    generator.genRandomCircle(n, h, radius, genSet);
+    solver.solve(genSet, output);
+    EXPECT_EQ(h, output.getSize());
 }
 
 void testSolverGen2D(ch::Solver2D& solver)

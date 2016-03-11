@@ -29,6 +29,12 @@ class Generator2D
         bool genUniformCircle(long long n, long long h,
                               double radius, Points2D& points);
 
+        /**
+         * Same as genUniformCircle, only the hull points are spread randomly
+         */
+        bool genRandomCircle(long long n, long long h,
+                              double radius, Points2D& points);
+
     private:
         /**
          * Generates points in linear combination of given points
