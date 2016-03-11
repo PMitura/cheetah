@@ -36,15 +36,19 @@ bool Generator2D::genRandomCircle(long long n, long long h,
 
     // generate points on circle (= on hull) randomly
     srand(time(NULL));
+    std::vector<double> coefs;
     for (long long i = 0; i < h; i++) {
-        double coef = ((double) rand() / RAND_MAX) * (2*PI);
-        double px = radius * cos(i * coef),
-               py = radius * sin(i * coef);
+        coefs.push_back(((double) rand() / RAND_MAX) * (2*PI));
+    }
+    std::sort(coefs.begin(), coefs.end());
+    for (long long i = 0; i < h; i++) {
+        double px = radius * cos(coefs[i]),
+               py = radius * sin(coefs[i]);
         points.add({px, py});
     }
 
     // remaining interior points
-    generateInCombination(n - h, std::min(h, (long long) 50), points);
+    generateTriangulated(n - h, std::min(h, (long long) 50), points);
 
     return true;
 }
@@ -81,18 +85,20 @@ void Generator2D::generateTriangulated(long long n, int of, Points2D& points)
     const data_t& hullData = points.getData();
 
     // compute weights of triangles
-    std::vector<double> weights;
-    double totalArea = 0, area;
+    std::vector<std::pair<double, int>> weights;
+    double totalArea = 0, area, cumul = 0;
     for (int i = 1; i < of - 1; i++) {
         area = fabs((hullData[0  ][0] * (hullData[i  ][1] - hullData[i+1][1]) +
                      hullData[i  ][0] * (hullData[i+1][1] - hullData[0  ][1]) +
                      hullData[i+1][0] * (hullData[0  ][1] - hullData[i  ][1])
                     ) / 2);
         totalArea += area;
-        weights.push_back(area);
+        weights.push_back({area, i});
     }
     for (auto& i : weights) {
-        i /= totalArea;
+        i.first /= totalArea;
+        cumul += i.first;
+        i.first = cumul;
     }
 
     // generate points
@@ -100,15 +106,10 @@ void Generator2D::generateTriangulated(long long n, int of, Points2D& points)
     for (int x = 0; x < n; x++) {
 
         // choose random triangle
-        double rng = ((double) rand() / RAND_MAX), cumul = 0;
-        int rngIdx;
-        for (int i = 1; i < of - 1; i++) {
-            cumul += weights[i - 1];
-            if (rng <= cumul) {
-                rngIdx = i;
-                break;
-            }
-        }
+        double rng = ((double) rand() / RAND_MAX);
+        std::pair<double, int> cmp = {rng, 0};
+        int rngIdx = std::lower_bound(weights.begin(), weights.end(), cmp)
+                     -> second;
 
         // generate random point inside that triangle (ABC)
         double ax = hullData[0         ][0], ay = hullData[0         ][1],
@@ -124,19 +125,6 @@ void Generator2D::generateTriangulated(long long n, int of, Points2D& points)
                newPtY =   (1 - sqrt(rng1)) * ay
                         + sqrt(rng1) * (1 - rng2) * by
                         + sqrt(rng1) * rng2 * cy;
-
-        /*
-        double newPtX = rng1 * (bx-ax) + rng2 * (cx-ax),
-               newPtY = rng1 * (by-ay) + rng2 * (cy-ay);
-
-        // generated point may need to be translated if outside of triangle
-        if (!ptInTriangle(ax, ay, bx, by, cx, cy, newPtX, newPtY)) {
-            double dx = (bx-ax) + (cx-ax),
-                   dy = (by-ay) + (cy-ay);
-            newPtX = ax + (newPtX - dx);
-            newPtY = ay + (newPtY - dy);
-        }
-        */
 
         points.add({newPtX, newPtY});
     }

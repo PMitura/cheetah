@@ -106,7 +106,7 @@ TEST(PrintHull, EraseMe)
     ch::Generator2D generator;
     ch::Points2D points;
 
-    EXPECT_TRUE(generator.genUniformCircle(1000, 6, 100, points));
+    EXPECT_TRUE(generator.genRandomCircle(1000, 6, 100, points));
     EXPECT_EQ(1000, points.getSize());
 
     std::ofstream of("example.out");
