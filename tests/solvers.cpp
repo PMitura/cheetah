@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "lib/structures.h"
+#include "lib/generator.h"
 #include "solvers/jarvis_scan_2d.h"
 
 void printHull2D(ch::Points2D& points)
@@ -68,4 +69,15 @@ TEST(JarvisScan2DTest, PremadeData)
 {
     ch::JarvisScan2D jarvis;
     testSolver2D(jarvis);
+}
+
+TEST(JarvisScan2DTest, Generated)
+{
+    ch::Generator2D generator;
+    ch::JarvisScan2D jarvis;
+    ch::Points2D genSet, output;
+    generator.genUniformCircle(100, 6, 1000, genSet);
+    jarvis.solve(genSet, output);
+    EXPECT_EQ(6, output.getSize());
+
 }
