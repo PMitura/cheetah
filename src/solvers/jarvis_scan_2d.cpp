@@ -8,6 +8,11 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
     std::vector<double> currPoint;
     const data_t& inputData = input.getData();
 
+    if (inputData.size() <= 1) {
+        output = input;
+        return output;
+    }
+
     unsigned maxIndex = 0,
              currIndex,
              nextIndex;
