@@ -14,4 +14,15 @@ double polarAngle(double ax, double ay, double bx, double by);
 /** computes distance of points a and b */
 double dist(double ax, double ay, double bx, double by);
 
+/** finds out on which side does the point lie */
+int orientation(double ax, double ay,
+                double bx, double by,
+                double cx, double cy);
+
+/** finds out if point is in triangle */
+bool ptInTriangle(double ax, double ay,
+                  double bx, double by,
+                  double cx, double cy,
+                  double px, double py);
+
 }

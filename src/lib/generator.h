@@ -44,6 +44,18 @@ class Generator2D
          * @param points Contains points in combination, serves as output
          */
         void generateInCombination(long long n, int of, Points2D& points);
+
+        /**
+         * Triangulates given convex polygon, then generates points inside
+         * these triangles unifromly.
+         *
+         * Slower than combination, but truly uniform
+         *
+         * @param n      Number of points to generate
+         * @param of     Number of points in polygon
+         * @param points Contains points in polygon, serves as output
+         */
+        void generateTriangulated(long long n, int of, Points2D& points);
 };
 
 }

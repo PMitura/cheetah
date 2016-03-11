@@ -7,14 +7,14 @@
 #include "lib/generator.h"
 #include "solvers/jarvis_scan_2d.h"
 
-void printHull2D(ch::Points2D& points)
+void printHull2D(ch::Points2D& points, std::ofstream& out)
 {
     const ch::data_t& data = points.getData();
     for (auto point : data) {
         for (auto coord : point) {
-            std::cout << coord << " ";
+            out << coord << " ";
         }
-        std::cout << std::endl;
+        out << std::endl;
     }
 }
 
@@ -99,4 +99,16 @@ TEST(JarvisScan2DTest, Generated)
 {
     ch::JarvisScan2D jarvis;
     testSolverGen2D(jarvis);
+}
+
+TEST(PrintHull, EraseMe)
+{
+    ch::Generator2D generator;
+    ch::Points2D points;
+
+    EXPECT_TRUE(generator.genUniformCircle(1000, 6, 100, points));
+    EXPECT_EQ(1000, points.getSize());
+
+    std::ofstream of("example.out");
+    printHull2D(points, of);
 }
