@@ -7,8 +7,9 @@ namespace ch
 bool Generator2D::genUniformCircle(long long n, long long h,
                       double radius, Points2D& points)
 {
-    if (n < h)
+    if (n < h || n <= 0 || radius < EPS || h <= 1) {
         return false;
+    }
 
     // generate points on circle (= on hull) uniformly
     double step = (2*PI) / h;
@@ -37,11 +38,12 @@ void Generator2D::generateInCombination(long long n, int of, Points2D& points)
             comb[j] = rand();
             sum += comb[j];
         }
+        double newX = 0, newY = 0;
         for (int j = 0; j < of; j++) {
-            double newX = hullData[j][0] * (comb[j] / sum),
-                   newY = hullData[j][1] * (comb[j] / sum);
-            points.add({newX, newY});
+            newX += hullData[j][0] * (comb[j] / sum);
+            newY += hullData[j][1] * (comb[j] / sum);
         }
+        points.add({newX, newY});
     }
 }
 

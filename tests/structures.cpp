@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "lib/structures.h"
+#include "lib/generator.h"
 
 TEST(PointsNDTest, Constructor)
 {
@@ -27,4 +28,24 @@ TEST(Points2DTest, Constructor)
 {
     ch::Points2D a;
     EXPECT_EQ(2, a.getDimension());
+}
+
+TEST(Generator2DTest, Edge)
+{
+    ch::Generator2D generator;
+    ch::Points2D points;
+    EXPECT_FALSE(generator.genUniformCircle(0, 0, 10, points));
+    EXPECT_FALSE(generator.genUniformCircle(5, 10, 10, points));
+    EXPECT_FALSE(generator.genUniformCircle(10, 4, 0, points));
+    EXPECT_FALSE(generator.genUniformCircle(1, 1, 10, points));
+    EXPECT_EQ(0, points.getSize());
+
+    EXPECT_TRUE(generator.genUniformCircle(100, 10, 100, points));
+    EXPECT_EQ(100, points.getSize());
+    points.clear();
+    EXPECT_TRUE(generator.genUniformCircle(500, 250, 100, points));
+    EXPECT_EQ(500, points.getSize());
+    points.clear();
+    EXPECT_TRUE(generator.genUniformCircle(100000, 50000, 100000, points));
+    EXPECT_EQ(100000, points.getSize());
 }

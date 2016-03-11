@@ -44,7 +44,7 @@ void testSingleFile(const std::string& filename,
     EXPECT_EQ(expected, output.getSize());
 }
 
-void testSolver2D(ch::Solver2D& solver)
+void testSolverPremade2D(ch::Solver2D& solver)
 {
     // 8 integer points, 5 on hull
     testSingleFile("tests/files/basic1.in", solver, 5);
@@ -65,19 +65,34 @@ void testSolver2D(ch::Solver2D& solver)
     testSingleFile("tests/files/single.in", solver, 1);
 }
 
+void testSingleGen(long long n, long long h, double radius, 
+                   ch::Solver2D& solver)
+{
+    ch::Generator2D generator;
+    ch::Points2D genSet, output;
+    generator.genUniformCircle(n, h, radius, genSet);
+    solver.solve(genSet, output);
+    EXPECT_EQ(h, output.getSize());
+}
+
+void testSolverGen2D(ch::Solver2D& solver)
+{
+    testSingleGen(100, 6, 1000, solver);
+    testSingleGen(1000, 100, 1000, solver);
+    testSingleGen(500, 10, 1, solver);
+    testSingleGen(500, 250, 100000, solver);
+    testSingleGen(50, 49, 100000, solver);
+    testSingleGen(50, 50, 100000, solver);
+}
+
 TEST(JarvisScan2DTest, PremadeData)
 {
     ch::JarvisScan2D jarvis;
-    testSolver2D(jarvis);
+    testSolverPremade2D(jarvis);
 }
 
 TEST(JarvisScan2DTest, Generated)
 {
-    ch::Generator2D generator;
     ch::JarvisScan2D jarvis;
-    ch::Points2D genSet, output;
-    generator.genUniformCircle(100, 6, 1000, genSet);
-    jarvis.solve(genSet, output);
-    EXPECT_EQ(6, output.getSize());
-
+    testSolverGen2D(jarvis);
 }
