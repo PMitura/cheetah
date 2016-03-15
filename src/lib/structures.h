@@ -8,7 +8,9 @@ namespace ch
 
 typedef std::vector<double> point_t;
 typedef std::vector<point_t> data_t;
-// TODO: lol delete this in release
+typedef std::pair<double, double> point2d_t;
+
+// debug macro, should not appear in relase
 #define D(X) std::cout<<"  "<<#X": "<<X<<std::endl;
 
 /**
