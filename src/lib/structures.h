@@ -12,6 +12,7 @@ typedef std::pair<double, double> point2d_t;
 
 // debug macro, should not appear in relase
 #define D(X) std::cout<<"  "<<#X": "<<X<<std::endl;
+#define R(X) std::cout<<"  "<<X<<std::endl;
 
 /**
  * General class for input or output point set

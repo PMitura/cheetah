@@ -6,8 +6,9 @@
 #include "lib/structures.h"
 #include "lib/generator.h"
 #include "solvers/jarvis_scan_2d.h"
+#include "solvers/quickhull_2d.h"
 
-void printHull2D(ch::Points2D& points, std::ofstream& out)
+void printHull2D(ch::Points2D& points, std::ostream& out)
 {
     const ch::data_t& data = points.getData();
     for (auto point : data) {
@@ -63,9 +64,15 @@ void testSolverPremade2D(ch::Solver2D& solver)
 
     // single point
     testSingleFile("tests/files/single.in", solver, 1);
+
+    // diamond
+    testSingleFile("tests/files/diamond.in", solver, 4);
+
+    // hexagon
+    testSingleFile("tests/files/hexagon.in", solver, 6);
 }
 
-void testSingleGen(long long n, long long h, double radius, 
+void testSingleGen(long long n, long long h, double radius,
                    ch::Solver2D& solver)
 {
     ch::Generator2D generator;
@@ -89,7 +96,7 @@ void testSolverGen2D(ch::Solver2D& solver)
     testSingleGen(50, 50, 100000, solver);
 }
 
-TEST(JarvisScan2DTest, PremadeData)
+TEST(JarvisScan2DTest, Premade)
 {
     ch::JarvisScan2D jarvis;
     testSolverPremade2D(jarvis);
@@ -101,6 +108,19 @@ TEST(JarvisScan2DTest, Generated)
     testSolverGen2D(jarvis);
 }
 
+TEST(QuickHull2DTest, Premade)
+{
+    ch::Quickhull2D quickhull;
+    testSolverPremade2D(quickhull);
+}
+
+TEST(QuickHull2DTest, Generated)
+{
+    ch::Quickhull2D quickhull;
+    testSolverGen2D(quickhull);
+}
+
+/*
 TEST(PrintHull, EraseMe)
 {
     ch::Generator2D generator;
@@ -112,3 +132,4 @@ TEST(PrintHull, EraseMe)
     std::ofstream of("example.out");
     printHull2D(points, of);
 }
+*/
