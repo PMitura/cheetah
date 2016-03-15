@@ -23,9 +23,9 @@ inline double polarAngle(double ax, double ay, double bx, double by)
 }
 
 /** computes dot product of two vectors */
-inline double dot(double ax, double ay, double bx, double by)
+inline double dot(point2d_t a, point2d_t b)
 {
-    return ax * bx + ay * by;
+    return a.first * b.first + a.second * b.second;
 }
 
 /** computes distance of points a and b */
@@ -39,9 +39,9 @@ inline double dist(point2d_t a, point2d_t b)
 }
 
 /** area of square given by side */
-inline double square(double ax, double ay)
+inline double square(point2d_t p)
 {
-    return ax * ax + ay * ay;
+    return p.first * p.first + p.second * p.second;
 }
 
 /** difference of two vectors */
@@ -71,8 +71,7 @@ inline double distToLine(point2d_t a, point2d_t b, point2d_t p)
 {
     point2d_t ap = vectorize(a, p),
               ab = vectorize(a, b);
-    double u = dot(ap.first, ap.second, ab.first, ab.second)
-               / square(ab.first, ab.second);
+    double u = dot(ap, ab) / square(ab);
     point2d_t c = translate(a, scale(ab, u));
     return dist(p, c);
 }
