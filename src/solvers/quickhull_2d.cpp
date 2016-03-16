@@ -38,10 +38,6 @@ void Quickhull2D::recNaive(point_t& a, point_t& b, data_t* plane)
             cbPlane -> push_back(pt);
         }
     }
-    /*
-    D(acPlane -> size());
-    D(cbPlane -> size());
-    */
 
     globOut_ -> add(c);
     recNaive(a, c, acPlane);
@@ -84,8 +80,6 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
         }
     }
 
-    // R("leftEdge  " << minX[0] << ", " << minX[1]);
-    // R("rightEdge " << maxX[0] << ", " << maxX[1]);
     data_t* topPlane = new data_t,
           * botPlane = new data_t;
     for (auto& pt : inputData) {
@@ -96,9 +90,6 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
             topPlane -> push_back(pt);
         } else if (o == 2) {
             botPlane -> push_back(pt);
-            // R("bot " << pt[0] << ", " << pt[1]);
-        } else {
-            // R("col " << pt[0] << ", " << pt[1]);
         }
     }
 
@@ -108,7 +99,6 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
     }
 
     // recursive part
-
     recNaive(minX, maxX, topPlane);
     recNaive(maxX, minX, botPlane);
 
