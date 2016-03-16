@@ -10,7 +10,7 @@ TARGET := bin/$(NAME)
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -g -Wall -fopenmp -pedantic -std=c++11
+CFLAGS := -g -Wall -fopenmp -pedantic -std=c++11 -O3 -ffast-math
 LIB :=
 INC := -I src
 
@@ -19,7 +19,7 @@ TESTSRCS := $(shell find $(TESTDIR) -type f -name *.$(SRCEXT))
 TESTOBJS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/$(TESTDIR)/%,$(TESTSRCS:.$(SRCEXT)=.o))
 TESTTARGET := bin/tests
 TESTLIB := -lgtest -lgtest_main -lpthread
-TESTFLAG := 
+TESTFLAG :=
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."

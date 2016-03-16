@@ -6,6 +6,7 @@
 #include "lib/structures.h"
 #include "lib/generator.h"
 #include "solvers/jarvis_scan_2d.h"
+#include "solvers/graham_scan_2d.h"
 #include "solvers/quickhull_2d.h"
 
 void printHull2D(ch::Points2D& points, std::ostream& out)
@@ -42,6 +43,7 @@ void testSingleFile(const std::string& filename,
     ch::Points2D input, output;
     ASSERT_TRUE(readFile(filename, input));
     solver.solve(input, output);
+    printHull2D(output, std::cout);
     EXPECT_EQ(expected, output.getSize());
 }
 
@@ -106,6 +108,18 @@ TEST(JarvisScan2DTest, Generated)
 {
     ch::JarvisScan2D jarvis;
     testSolverGen2D(jarvis);
+}
+
+TEST(GrahamScan2DTest, Premade)
+{
+    ch::GrahamScan2D graham;
+    testSolverPremade2D(graham);
+}
+
+TEST(GrahamScan2DTest, Generated)
+{
+    ch::GrahamScan2D graham;
+    testSolverGen2D(graham);
 }
 
 TEST(QuickHull2DTest, Premade)
