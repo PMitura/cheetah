@@ -39,11 +39,23 @@ Points2D& GrahamScan2D::solve(const Points2D& input, Points2D& output)
     std::vector<unsigned>* ptStack = new std::vector<unsigned>;
     ptStack -> push_back(order_ -> at(0));
     ptStack -> push_back(order_ -> at(1));
-    unsigned iPtr = 2, sPtr = 2;
+    unsigned iPtr = 2, sPtr = 2, iIdx, sIdx1, sIdx2;
     while (iPtr < inputData.size()) {
-        unsigned iIdx  = order_  -> at(iPtr);
-        unsigned sIdx1 = ptStack -> at(sPtr - 1),
-                 sIdx2 = ptStack -> at(sPtr - 2);
+        iIdx  = order_  -> at(iPtr);
+        sIdx1 = ptStack -> at(1);
+        sIdx2 = ptStack -> at(0);
+        if (orientation(inputData[sIdx2][0], inputData[sIdx2][1],
+                        inputData[sIdx1][0], inputData[sIdx1][1],
+                        inputData[iIdx ][0], inputData[iIdx ][1]) == 1) {
+            break;
+        }
+        iPtr++;
+        ptStack -> at(1) = iIdx;
+    }
+    while (iPtr < inputData.size()) {
+        iIdx  = order_  -> at(iPtr);
+        sIdx1 = ptStack -> at(sPtr - 1);
+        sIdx2 = ptStack -> at(sPtr - 2);
         if (orientation(inputData[sIdx2][0], inputData[sIdx2][1],
                         inputData[sIdx1][0], inputData[sIdx1][1],
                         inputData[iIdx ][0], inputData[iIdx ][1]) == 1) {

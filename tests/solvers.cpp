@@ -43,7 +43,6 @@ void testSingleFile(const std::string& filename,
     ch::Points2D input, output;
     ASSERT_TRUE(readFile(filename, input));
     solver.solve(input, output);
-    printHull2D(output, std::cout);
     EXPECT_EQ(expected, output.getSize());
 }
 
@@ -79,10 +78,12 @@ void testSingleGen(long long n, long long h, double radius,
 {
     ch::Generator2D generator;
     ch::Points2D genSet, output;
+
     generator.genUniformCircle(n, h, radius, genSet);
     solver.solve(genSet, output);
     EXPECT_EQ(h, output.getSize());
     genSet.clear(); output.clear();
+
     generator.genRandomCircle(n, h, radius, genSet);
     solver.solve(genSet, output);
     EXPECT_EQ(h, output.getSize());
