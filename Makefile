@@ -10,8 +10,8 @@ TARGET := bin/$(NAME)
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -g -Wall -fopenmp -pedantic -std=c++11 -O3 -ffast-math
-LIB :=
+CFLAGS := -g -Wall -Wextra -pedantic -std=c++11 -O3 -ffast-math
+LIB := -fopenmp
 INC := -I src
 
 TESTDIR := tests

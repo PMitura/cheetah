@@ -1,5 +1,12 @@
 #pragma once
 
+#include <iostream>
+#include <vector>
+#include <ctime>
+#include <omp.h>
+
+#include "lib/generator.h"
+#include "lib/structures.h"
 #include "solvers/solver_2d.h"
 #include "solvers/jarvis_scan_2d.h"
 #include "solvers/graham_scan_2d.h"
@@ -17,7 +24,7 @@ class PerfTest
         /** runs all scheduled tests */
         void runAllTests();
 
-        bool runGeneratedTest(int n, int h, int dim);
+        bool runGeneratedTest(int n, int h, double span, Solver2D& solver);
 
     private:
 
