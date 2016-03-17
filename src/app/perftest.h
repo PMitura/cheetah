@@ -1,5 +1,10 @@
 #pragma once
 
+#include "solvers/solver_2d.h"
+#include "solvers/jarvis_scan_2d.h"
+#include "solvers/graham_scan_2d.h"
+#include "solvers/quickhull_2d.h"
+
 namespace ch
 {
 

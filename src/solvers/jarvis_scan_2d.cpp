@@ -3,6 +3,11 @@
 namespace ch
 {
 
+JarvisScan2D::JarvisScan2D()
+{
+    name_ = "Jarvis Scan";
+}
+
 Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
 {
     std::vector<double> currPoint;

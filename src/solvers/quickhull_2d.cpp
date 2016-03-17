@@ -5,7 +5,9 @@ namespace ch
 
 Quickhull2D::Quickhull2D()
     :globOut_(NULL)
-{}
+{
+    name_ = "Quickhull";
+}
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
 {

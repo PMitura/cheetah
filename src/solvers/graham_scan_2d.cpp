@@ -5,6 +5,7 @@ namespace ch
 
 GrahamScan2D::GrahamScan2D()
 {
+    name_ = "Graham Scan";
 }
 
 Points2D& GrahamScan2D::solve(const Points2D& input, Points2D& output)

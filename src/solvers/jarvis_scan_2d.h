@@ -9,6 +9,7 @@ namespace ch {
 class JarvisScan2D : public Solver2D
 {
     public:
+        JarvisScan2D();
         Points2D& solve(const Points2D& input, Points2D& output);
 };
 

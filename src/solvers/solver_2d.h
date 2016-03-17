@@ -19,6 +19,12 @@ class Solver2D
          * @return Convex hull of input data set.
          */
         virtual Points2D& solve(const Points2D& input, Points2D& output) = 0;
+
+        inline std::string getName() { return name_; }
+
+    protected:
+        /** name of solver */
+        std::string name_;
 };
 
 }
