@@ -4,8 +4,7 @@ namespace ch
 {
 
 PointsND::PointsND(unsigned int dim)
-    : dimension_(dim)
-{}
+    : dimension_(dim) {}
 
 bool PointsND::add(point_t point)
 {

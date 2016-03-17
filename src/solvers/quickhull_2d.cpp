@@ -12,16 +12,16 @@ Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
     return solveNaive(input, output);
 }
 
-void Quickhull2D::recNaive(point_t& a, point_t& b, data_t* plane)
+void Quickhull2D::recNaive(point_t& a, point_t& b, data_t& plane)
 {
-    if (plane -> size() == 0)
+    if (plane.size() == 0)
         return;
 
     // find point c furthest from ab
-    point_t c = (*plane)[0];
+    point_t c = plane[0];
     double maxDist = distToLine({a[0], a[1]}, {b[0], b[1]}, {c[0], c[1]}),
            currDist;
-    for (auto& pt : (*plane)) {
+    for (auto& pt : plane) {
         currDist = distToLine({a[0], a[1]}, {b[0], b[1]}, {pt[0], pt[1]});
         if (maxDist - currDist < -EPS) {
             maxDist = currDist;
@@ -29,22 +29,19 @@ void Quickhull2D::recNaive(point_t& a, point_t& b, data_t* plane)
         }
     }
 
-    data_t* acPlane = new data_t, * cbPlane = new data_t;
+    data_t acPlane, cbPlane;
 
-    for (auto& pt : (*plane)) {
+    for (auto& pt : plane) {
         if (orientation(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 1) {
-            acPlane -> push_back(pt);
+            acPlane.push_back(pt);
         } else if (orientation(c[0], c[1], b[0], b[1], pt[0], pt[1]) == 1) {
-            cbPlane -> push_back(pt);
+            cbPlane.push_back(pt);
         }
     }
 
     globOut_ -> add(c);
     recNaive(a, c, acPlane);
     recNaive(c, b, cbPlane);
-
-    delete acPlane;
-    delete cbPlane;
 }
 
 Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
@@ -80,16 +77,15 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
         }
     }
 
-    data_t* topPlane = new data_t,
-          * botPlane = new data_t;
+    data_t topPlane, botPlane;
     for (auto& pt : inputData) {
         int o = orientation(minX[0], minX[1],
                             maxX[0], maxX[1],
                             pt[0],   pt[1]);
         if (o == 1) {
-            topPlane -> push_back(pt);
+            topPlane.push_back(pt);
         } else if (o == 2) {
-            botPlane -> push_back(pt);
+            botPlane.push_back(pt);
         }
     }
 
@@ -101,9 +97,6 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
     // recursive part
     recNaive(minX, maxX, topPlane);
     recNaive(maxX, minX, botPlane);
-
-    delete topPlane;
-    delete botPlane;
 
     return output;
 }

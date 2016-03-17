@@ -13,7 +13,6 @@ class GrahamScan2D : public Solver2D
 {
     public:
         GrahamScan2D();
-        ~GrahamScan2D();
 
         Points2D& solve(const Points2D& input, Points2D& output);
 
@@ -25,9 +24,9 @@ class GrahamScan2D : public Solver2D
         void computeAngles(const data_t& points);
 
         /** point indexes sorted by polar angle */
-        std::vector<unsigned> * order_;
+        std::vector<unsigned> order_;
         /** precomputed polar angles */
-        std::vector<double> * polar_;
+        std::vector<double> polar_;
         /** pivot point index */
         int pivot_;
 
