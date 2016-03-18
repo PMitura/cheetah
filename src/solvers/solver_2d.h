@@ -1,7 +1,8 @@
 #pragma once
 
 #include <vector>
-#include <lib/structures.h>
+
+#include "lib/structures.h"
 
 namespace ch
 {

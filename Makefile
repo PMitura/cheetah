@@ -38,7 +38,7 @@ clean:
 	@echo " Cleaning...";
 	rm -rf $(BUILDDIR) $(TARGET)
 
-run:
+run: $(TARGET)
 	$(TARGET)
 
 test: $(TESTOBJS) $(OBJECTS)

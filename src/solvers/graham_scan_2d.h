@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "solvers/solver_2d.h"
+#include "lib/structures.h"
 #include "lib/geometry.h"
 
 namespace ch

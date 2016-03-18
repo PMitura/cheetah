@@ -26,7 +26,7 @@ Points2D& GrahamScan2D::solve(const Points2D& input, Points2D& output)
     std::swap(order_.at(0), order_.at(pivot_));
     computeAngles(inputData);
 
-    std::sort((order_.begin()) + 1, order_.end(), 
+    std::sort((order_.begin()) + 1, order_.end(),
             AngleCmp(*this, inputData));
 
     std::vector<unsigned> ptStack;

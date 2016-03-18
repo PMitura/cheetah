@@ -4,7 +4,8 @@
 #include "lib/geometry.h"
 #include "solvers/solver_2d.h"
 
-namespace ch {
+namespace ch
+{
 
 class JarvisScan2D : public Solver2D
 {

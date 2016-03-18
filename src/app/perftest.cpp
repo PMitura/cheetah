@@ -11,10 +11,10 @@ void PerfTest::runAllTests()
     solvers.push_back(new GrahamScan2D());
     solvers.push_back(new Quickhull2D());
 
-    // cleanup
-    for (auto& solver : solvers) {
-        delete solver;
+    for (auto solver : solvers) {
+        runGeneratedTest(100, 6, 100, *solver);
     }
+
 }
 
 bool PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
