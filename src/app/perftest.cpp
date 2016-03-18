@@ -7,21 +7,20 @@ void PerfTest::runAllTests()
 {
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
-    solvers.push_back(new JarvisScan2D());
+    // solvers.push_back(new JarvisScan2D());
     solvers.push_back(new GrahamScan2D());
     solvers.push_back(new Quickhull2D());
 
     for (auto solver : solvers) {
-        runGeneratedTest(100, 6, 100, *solver);
+        runGeneratedTest(1000000, 100000, 1000, *solver);
     }
-
 }
 
 bool PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
 {
     Generator2D generator;
     Points2D input, output;
-    generator.genRandomCircle(n, h, span, input);
+    generator.genUniformCircle(n, h, span, input);
 
     double timeStart = omp_get_wtime();
     solver.solve(input, output);
@@ -31,6 +30,7 @@ bool PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
         std::cout << "FAILED" << std::endl;
         return false;
     }
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << timeEnd - timeStart << std::endl;
     return true;
 }

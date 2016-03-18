@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 #include "lib/structures.h"
@@ -12,6 +13,7 @@
 void printHull2D(ch::Points2D& points, std::ostream& out)
 {
     const ch::data_t& data = points.getData();
+    out << std::setprecision(15);
     for (auto point : data) {
         for (auto coord : point) {
             out << coord << " ";
@@ -135,16 +137,12 @@ TEST(QuickHull2DTest, Generated)
     testSolverGen2D(quickhull);
 }
 
-/*
 TEST(PrintHull, EraseMe)
 {
     ch::Generator2D generator;
     ch::Points2D points;
 
-    EXPECT_TRUE(generator.genRandomCircle(1000, 6, 100, points));
-    EXPECT_EQ(1000, points.getSize());
-
+    EXPECT_TRUE(generator.genUniformCircle(1000000, 100000, 100000, points));
     std::ofstream of("example.out");
     printHull2D(points, of);
 }
-*/
