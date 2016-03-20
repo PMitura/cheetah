@@ -74,7 +74,8 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
             }
         }
         if (failed) {
-            std::cout << "[FAILED] (" << failed << " of 100000" << std::endl;
+            std::cout << "[FAILED] (" << failed << " of "
+                      << inst.runs << ")" << std::endl;
         } else {
             std::cout << timeSum << " ms" << std::endl;
         }
@@ -87,17 +88,15 @@ double PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
 {
     Generator2D generator;
     Points2D input, output;
-    generator.genUniformCircle(n, h, span, input);
+    generator.genRandomCircle(n, h, span, input);
 
     double timeStart = omp_get_wtime();
     solver.solve(input, output);
     double timeEnd   = omp_get_wtime();
 
-    /*
     if (output.getSize() != h) {
         return -1;
     }
-    */
     return timeEnd - timeStart;
 }
 
