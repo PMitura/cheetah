@@ -137,6 +137,7 @@ TEST(QuickHull2DTest, Generated)
     testSolverGen2D(quickhull);
 }
 
+/*
 TEST(PrintHull, EraseMe)
 {
     ch::Generator2D generator;
@@ -146,3 +147,4 @@ TEST(PrintHull, EraseMe)
     std::ofstream of("example.out");
     printHull2D(points, of);
 }
+*/
