@@ -22,12 +22,44 @@ namespace ch
 class PerfTest
 {
     public:
-        /** runs all scheduled tests */
+        /** Runs all scheduled tests */
         void runAllTests();
 
-        bool runGeneratedTest(int n, int h, double span, Solver2D& solver);
-
     private:
+        /** One instance of test run */
+        struct Instance {
+            int n, h, runs;
+            double span;
+        };
+
+        /**
+         * Runs series of small instance tests with various parameters.
+         *
+         * Tests are run multiple times with same parameters to reduce
+         * inacurracies in measurement.
+         *
+         * @param solvers list of tested solvers
+         */
+        void smallTests(std::vector<Solver2D*> solvers);
+
+        /**
+         * Runs series of tests on big inputs with various parameters.
+         *
+         * @param solvers list of tested solvers
+         */
+        void bigTests(std::vector<Solver2D*> solvers);
+
+        void runTestInstance(Instance& inst, std::vector<Solver2D*> solvers);
+
+        /**
+         * Generates, runs, and measures of single problem instance.
+         *
+         * Time to generate data is not counted.
+         *
+         * @param n size of data set
+         * @return execution time of solver
+         */
+        double runGeneratedTest(int n, int h, double span, Solver2D& solver);
 
 };
 

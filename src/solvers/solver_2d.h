@@ -13,6 +13,8 @@ namespace ch
 class Solver2D
 {
     public:
+        virtual ~Solver2D() {}
+
         /**
          * Find convex hull of input data set.
          *

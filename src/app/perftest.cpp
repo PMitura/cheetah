@@ -7,16 +7,81 @@ void PerfTest::runAllTests()
 {
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
-    // solvers.push_back(new JarvisScan2D());
+    solvers.push_back(new JarvisScan2D());
     solvers.push_back(new GrahamScan2D());
     solvers.push_back(new Quickhull2D());
 
+    // run tests
+    // smallTests(solvers);
+    solvers.erase(solvers.begin()); // jarvis too slow
+    bigTests(solvers);
+
+    // cleanup
     for (auto solver : solvers) {
-        runGeneratedTest(1000000, 100000, 1000, *solver);
+        delete solver;
     }
 }
 
-bool PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
+void PerfTest::smallTests(std::vector<Solver2D*> solvers)
+{
+    std::vector<Instance> instances;
+    instances.push_back({100 , 3,  25000, 1000});
+    instances.push_back({100 , 10, 25000, 1000});
+    instances.push_back({100 , 50, 25000, 1000});
+    instances.push_back({1000, 3,  10000, 1000});
+    instances.push_back({1000, 10, 10000, 1000});
+
+    for (auto& inst : instances) {
+        runTestInstance(inst, solvers);
+    }
+}
+
+void PerfTest::bigTests(std::vector<Solver2D*> solvers)
+{
+    // test block instance
+    std::vector<Instance> instances;
+    instances.push_back({2500000, 3,     1, 1000});
+    instances.push_back({2500000, 10,    1, 1000});
+    instances.push_back({2500000, 50,    1, 1000});
+    instances.push_back({2500000, 100,   1, 1000});
+    instances.push_back({2500000, 500,   1, 1000});
+    instances.push_back({2500000, 1000,  1, 1000});
+    instances.push_back({2500000, 5000,  1, 1000});
+    instances.push_back({2500000, 10000, 1, 1000});
+
+    for (auto& inst : instances) {
+        runTestInstance(inst, solvers);
+    }
+}
+
+void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
+{
+    std::cout << std::fixed << std::setprecision(6);
+    std::cout << inst.n    << " pts, "
+              << inst.h    << " on hull, "
+              << inst.runs << " runs" << std::endl;
+    for (auto solver : solvers) {
+        std::cout << std::setw(15) << solver -> getName() << ": ";
+        double timeSum = 0.0, currTime;
+        int failed = 0;
+        for (int i = 0; i < inst.runs; i++) {
+            currTime = runGeneratedTest(inst.n, inst.h,
+                    inst.span, *solver);
+            if (currTime < -EPS)
+                failed++;
+            timeSum += currTime;
+        }
+        if (failed) {
+            std::cout << "[FAILED] (" << failed << " of 100000" << std::endl;
+        } else {
+            std::cout << timeSum << " ms" << std::endl;
+        }
+    }
+    std::cout << std::endl;
+
+}
+
+double PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
 {
     Generator2D generator;
     Points2D input, output;
@@ -27,12 +92,10 @@ bool PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
     double timeEnd   = omp_get_wtime();
 
     if (output.getSize() != h) {
-        std::cout << "FAILED" << std::endl;
-        return false;
+        std::cout << "[FAILED]" << std::endl;
+        return -1;
     }
-    std::cout << std::fixed << std::setprecision(6);
-    std::cout << timeEnd - timeStart << std::endl;
-    return true;
+    return timeEnd - timeStart;
 }
 
 }
