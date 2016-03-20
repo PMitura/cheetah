@@ -41,8 +41,8 @@ void Quickhull2D::recNaive(point_t& a, point_t& b, data_t& plane)
         }
     }
 
-    globOut_ -> add(c);
     recNaive(a, c, acPlane);
+    globOut_ -> add(c);
     recNaive(c, b, cbPlane);
 }
 
@@ -56,34 +56,15 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
     globOut_ = &output;
     const data_t& inputData = input.getData();
 
-    // find min and max X, min/max Y in case of tie
-    point_t minX = inputData[0], maxX = inputData[0];
-    double delta;
-    for (unsigned i = 1; i < inputData.size(); i++) {
-        delta = minX[0] - inputData[i][0];
-        if (delta > EPS) {
-            minX = inputData[i];
-        } else if (fabs(delta) < EPS) {
-            if (minX[1] - EPS > inputData[i][1]) {
-                minX = inputData[i];
-            }
-        }
-
-        delta = maxX[0] - inputData[i][0];
-        if (delta < -EPS) {
-            maxX = inputData[i];
-        } else if (fabs(delta) < EPS) {
-            if (maxX[1] + EPS < inputData[i][1]) {
-                maxX = inputData[i];
-            }
-        }
-    }
+    std::pair<point_t, point_t> pivots = farthestPoints(inputData);
+    point_t pivotLeft  = pivots.first,
+            pivotRight = pivots.second;
 
     data_t topPlane, botPlane;
     for (auto& pt : inputData) {
-        int o = orientation(minX[0], minX[1],
-                            maxX[0], maxX[1],
-                            pt[0],   pt[1]);
+        int o = orientation(pivotLeft[0],  pivotLeft[1],
+                            pivotRight[0], pivotRight[1],
+                            pt[0],         pt[1]);
         if (o == 1) {
             topPlane.push_back(pt);
         } else if (o == 2) {
@@ -91,16 +72,100 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
         }
     }
 
-    output.add(maxX);
-    if (minX != maxX) {
-        output.add(minX);
+    if (pivotLeft != pivotRight) {
+        output.add(pivotLeft);
     }
 
     // recursive part
-    recNaive(minX, maxX, topPlane);
-    recNaive(maxX, minX, botPlane);
+    recNaive(pivotLeft, pivotRight, topPlane);
+    recNaive(pivotRight, pivotLeft, botPlane);
+
+    output.add(pivotRight);
 
     return output;
+}
+
+Points2D& Quickhull2D::solveIterative(const Points2D& input, Points2D& output)
+{
+    if (input.getSize() <= 2) {
+        output = input;
+        return output;
+    }
+    const data_t& inputData = input.getData();
+
+    std::pair<point_t, point_t> pivots;
+
+    return output;
+}
+
+std::pair<point_t, point_t> Quickhull2D::minMaxX(const data_t& points)
+{
+    double delta;
+    point_t minX = points[0], maxX = points[0];
+    for (unsigned i = 1; i < points.size(); i++) {
+        delta = minX[0] - points[i][0];
+        if (delta > EPS) {
+            minX = points[i];
+        } else if (fabs(delta) < EPS) {
+            if (minX[1] - EPS > points[i][1]) {
+                minX = points[i];
+            }
+        }
+
+        delta = maxX[0] - points[i][0];
+        if (delta < -EPS) {
+            maxX = points[i];
+        } else if (fabs(delta) < EPS) {
+            if (maxX[1] + EPS < points[i][1]) {
+                maxX = points[i];
+            }
+        }
+    }
+
+    return {minX, maxX};
+}
+
+std::pair<point_t, point_t> Quickhull2D::farthestPoints(const data_t& points)
+{
+    point_t minX = points[0], maxX = points[0],
+            minY = points[0], maxY = points[0];
+    for (unsigned i = 1; i < points.size(); i++) {
+        if (points[i][0] < minX[0]) {
+            minX = points[i];
+        }
+        if (points[i][0] > maxX[0]) {
+            maxX = points[i];
+        }
+        if (points[i][1] < minY[1]) {
+            minY = points[i];
+        }
+        if (points[i][1] > maxY[1]) {
+            maxY = points[i];
+        }
+    }
+    std::vector<point_t> candidates;
+    candidates.push_back(minY);
+    candidates.push_back(maxY);
+    candidates.push_back(minX);
+    candidates.push_back(minY);
+
+    std::pair<point_t, point_t> furthest = {candidates[0], candidates[1]};
+    double maxDist = 0.0, currDist;
+    for (int i = 0; i < 4; i++) {
+        for (int j = i + 1; j < 4; j++) {
+            currDist = dist({candidates[i][0], candidates[i][1]},
+                            {candidates[j][0], candidates[j][1]});
+            if (currDist > maxDist) {
+                furthest = {candidates[i], candidates[j]};
+                maxDist = currDist;
+            }
+        }
+    }
+
+    if (furthest.first[0] < furthest.second[0]) {
+        std::swap(furthest.first, furthest.second);
+    }
+    return furthest;
 }
 
 }
