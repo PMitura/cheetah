@@ -11,10 +11,17 @@ void PerfTest::runAllTests()
     solvers.push_back(new GrahamScan2D());
     solvers.push_back(new Quickhull2D());
 
+    // setup parallelism
+    omp_set_num_threads(4);
+
     // run tests
-    // smallTests(solvers);
+    smallTests(solvers);
+
+    /*
+    delete *solvers.begin();
     solvers.erase(solvers.begin()); // jarvis too slow
     bigTests(solvers);
+    */
 
     // cleanup
     for (auto solver : solvers) {
@@ -88,7 +95,7 @@ double PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
 {
     Generator2D generator;
     Points2D input, output;
-    generator.genRandomCircle(n, h, span, input);
+    generator.genUniformCircle(n, h, span, input);
 
     double timeStart = omp_get_wtime();
     solver.solve(input, output);

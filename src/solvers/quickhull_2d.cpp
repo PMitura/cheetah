@@ -79,13 +79,14 @@ Points2D& Quickhull2D::solveIterative(const Points2D& input, Points2D& output)
         bool save;
     };
 
+    // alt std::pair<point_t, point_t> pivots = minMaxX(inputData);
     std::pair<point_t, point_t> pivots = farthestPoints(inputData);
     point_t pivotLeft  = pivots.first,
             pivotRight = pivots.second;
 
     Face * topFace = new Face, * botFace = new Face;
     topFace -> a = pivotLeft;  topFace -> b = pivotRight; topFace -> save = 0;
-    botFace -> a = pivotRight; botFace -> b = pivotLeft;  topFace -> save = 0;
+    botFace -> a = pivotRight; botFace -> b = pivotLeft;  botFace -> save = 0;
     divideToPlanes(inputData, pivotLeft, pivotRight,
                    topFace -> see, botFace -> see);
 
@@ -133,7 +134,6 @@ Points2D& Quickhull2D::solveIterative(const Points2D& input, Points2D& output)
 
             delete curr;
         }
-
     }
 
     return output;

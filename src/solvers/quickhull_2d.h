@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <stack>
+#include <omp.h>
 
 #include "lib/structures.h"
 #include "lib/geometry.h"

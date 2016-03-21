@@ -38,7 +38,6 @@ Points2D& GrahamScan2D::solveSequential(const Points2D& input,
 
 Points2D& GrahamScan2D::solveParallel(const Points2D& input, Points2D& output)
 {
-    omp_set_num_threads(4);
     if (input.getSize() <= 2) {
         output = input;
         return output;
