@@ -11,8 +11,8 @@ Quickhull2D::Quickhull2D()
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
 {
-    // return solveNaive(input, output);
-    return solveIterative(input, output);
+    return solveNaive(input, output);
+    // return solveIterative(input, output);
 }
 
 void Quickhull2D::recNaive(point_t& a, point_t& b, data_t& plane)

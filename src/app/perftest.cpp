@@ -20,8 +20,8 @@ void PerfTest::runAllTests()
     /*
     delete *solvers.begin();
     solvers.erase(solvers.begin()); // jarvis too slow
-    bigTests(solvers);
     */
+    bigTests(solvers);
 
     // cleanup
     for (auto solver : solvers) {
