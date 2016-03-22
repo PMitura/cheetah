@@ -11,7 +11,8 @@ Quickhull2D::Quickhull2D()
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
 {
-    return solveNaive(input, output);
+    return solveParallel(input, output);
+    // return solveNaive(input, output);
     // return solveIterative(input, output);
 }
 
@@ -61,6 +62,80 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
     recNaive(pivotLeft, pivotRight, topPlane);
     output.add(pivotRight);
     recNaive(pivotRight, pivotLeft, botPlane);
+
+    return output;
+}
+
+void Quickhull2D::recParallel(point_t& a, point_t& b, data_t& plane,
+                              std::list<point_t>& onHull)
+{
+    if (plane.size() == 0) {
+        return;
+    }
+
+    // find point c farthest from ab
+    point_t c = planeFarthestPoint(a, b, plane);
+
+    data_t acPlane, cbPlane;
+
+    for (auto& pt : plane) {
+        if (orientation(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 1) {
+            acPlane.push_back(pt);
+        } else if (orientation(c[0], c[1], b[0], b[1], pt[0], pt[1]) == 1) {
+            cbPlane.push_back(pt);
+        }
+    }
+    std::list<point_t> acList, cbList;
+
+#pragma omp task shared(a, c, acPlane, acList) if (acPlane.size() > 5)
+        recParallel(a, c, acPlane, acList);
+    recParallel(c, b, cbPlane, cbList);
+#pragma omp taskwait
+
+    // O(1) append to onHull
+    onHull.splice(onHull.end(), acList);
+    onHull.push_back(c);
+    onHull.splice(onHull.end(), cbList);
+}
+
+Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
+{
+    if (input.getSize() <= 2) {
+        output = input;
+        return output;
+    }
+
+    const data_t& inputData = input.getData();
+
+    // alt std::pair<point_t, point_t> pivots = minMaxX(inputData);
+    std::pair<point_t, point_t> pivots = farthestPoints(inputData);
+    point_t pivotLeft  = pivots.first,
+            pivotRight = pivots.second;
+
+    data_t topPlane, botPlane;
+    divideToPlanes(inputData, pivotLeft, pivotRight, topPlane, botPlane);
+
+    std::list<point_t> topList, botList;
+
+#pragma omp parallel num_threads(4)
+    {
+#pragma omp single
+        {
+#pragma omp task shared(topList) if (topPlane.size() > 5)
+                recParallel(pivotLeft, pivotRight, topPlane, topList);
+            recParallel(pivotRight, pivotLeft, botPlane, botList);
+#pragma omp taskwait
+        }
+    }
+
+    output.add(pivotLeft);
+    for (auto pt : topList) {
+        output.add(pt);
+    }
+    output.add(pivotRight);
+    for (auto pt : botList) {
+        output.add(pt);
+    }
 
     return output;
 }
