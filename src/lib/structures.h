@@ -15,6 +15,8 @@ typedef std::pair<double, double> point2d_t;
 #define D(X) std::cout<<"  "<<#X": "<<X<<std::endl;
 #define R(X) std::cout<<"  "<<X<<std::endl;
 
+const unsigned MAX_NUM_THREADS = 24;
+
 /**
  * General class for input or output point set
  */

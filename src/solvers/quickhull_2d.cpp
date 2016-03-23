@@ -113,7 +113,7 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
             pivotRight = pivots.second;
 
     data_t topPlane, botPlane;
-    divideToPlanes(inputData, pivotLeft, pivotRight, topPlane, botPlane);
+    divideToPlanesPara(inputData, pivotLeft, pivotRight, topPlane, botPlane);
 
     std::list<point_t> topList, botList;
 
@@ -121,14 +121,13 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     {
 #pragma omp single
         {
-#pragma omp task shared(topList)
+#pragma omp task shared(topList, topPlane) if (topList.size() > 1000)
                 recParallel(pivotLeft, pivotRight, topPlane, topList);
             recParallel(pivotRight, pivotLeft, botPlane, botList);
 #pragma omp taskwait
         }
     }
 
-    double timeA = omp_get_wtime();
     output.add(pivotLeft);
     for (auto pt : topList) {
         output.add(pt);
@@ -137,9 +136,6 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     for (auto pt : botList) {
         output.add(pt);
     }
-    double timeB = omp_get_wtime();
-
-    D(timeB - timeA);
 
     return output;
 }
@@ -324,16 +320,27 @@ void Quickhull2D::divideToPlanesPara(const data_t& input,
                                      point_t& pivotLeft, point_t& pivotRight,
                                      data_t& topPlane, data_t& botPlane)
 {
-    for (auto& pt : input) {
-        int o = orientation(pivotLeft[0],  pivotLeft[1],
-                            pivotRight[0], pivotRight[1],
-                            pt[0],         pt[1]);
-        if (o == 1) {
-            topPlane.push_back(pt);
-        } else if (o == 2) {
-            botPlane.push_back(pt);
+    int * med = new int[input.size()];
+
+    double tA = omp_get_wtime();
+#pragma omp parallel for default(shared) schedule(static)
+    for (unsigned i = 0; i < input.size(); i++) {
+        med[i] = orientation(pivotLeft[0],  pivotLeft[1],
+                             pivotRight[0], pivotRight[1],
+                             input[i][0],   input[i][1]);
+    }
+    double tB = omp_get_wtime();
+    R("") D(tB - tA)
+
+    for (unsigned i = 0; i < input.size(); i++) {
+        if (med[i] == 1) {
+            topPlane.push_back(input[i]);
+        } else if (med[i] == 2) {
+            botPlane.push_back(input[i]);
         }
     }
+
+    delete[] med;
 }
 
 }

@@ -83,8 +83,8 @@ inline int orientation(const double& ax, const double& ay,
 {
     double cross = (ax - bx) * (ay - cy) - (ay - by) * (ax - cx);
 
-    // if (fabs(cross) < EPS) return 0;  // colinear
-    return (cross > EPS) ? 1 : 0; // clockwise or counter clockwise
+    if (fabs(cross) < EPS) return 0;  // colinear
+    return (cross > EPS) ? 1 : 2; // clockwise or counter clockwise
 }
 
 /** finds out on which side does the point lie */
