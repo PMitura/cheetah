@@ -49,7 +49,7 @@ Points2D& GrahamScan2D::solveParallel(const Points2D& input, Points2D& output)
     for (unsigned i = 0; i < inputData.size(); i++)
         order_.push_back(i);
     pivot_ = findMinY(inputData);
-    std::swap(order_.at(0), order_.at(pivot_));
+    std::swap(order_[0], order_[pivot_]);
 
     sortPointsParallel(inputData);
 
@@ -94,53 +94,51 @@ void GrahamScan2D::sortPoints(const data_t& inputData)
 
 void GrahamScan2D::scan(const data_t& inputData, Points2D& output)
 {
-    std::vector<unsigned> ptStack;
-    ptStack.push_back(order_.at(0));
-    ptStack.push_back(order_.at(1));
-    unsigned iPtr = 2, sPtr = 2, iIdx, sIdx1, sIdx2;
-    while (iPtr < inputData.size()) {
-        iIdx  = order_. at(iPtr);
-        sIdx1 = ptStack.at(1);
-        sIdx2 = ptStack.at(0);
-        if (orientation(inputData[sIdx2][0], inputData[sIdx2][1],
-                        inputData[sIdx1][0], inputData[sIdx1][1],
-                        inputData[iIdx ][0], inputData[iIdx ][1]) == 1) {
+    unsigned iPtr = 2, sPtr = 2, iSize = inputData.size();
+    unsigned * ptStack = new unsigned[iSize];
+    ptStack[0] = order_[0];
+    ptStack[1] = order_[1];
+    while (iPtr < iSize) {
+        if (ccw(inputData[ptStack[0]][0],
+                inputData[ptStack[0]][1],
+                inputData[ptStack[1]][0],
+                inputData[ptStack[1]][1],
+                inputData[order_[iPtr]][0],
+                inputData[order_[iPtr]][1])) {
             break;
         }
-        iPtr++;
-        ptStack.at(1) = iIdx;
+        ptStack[1] = order_[iPtr++];
     }
-    while (iPtr < inputData.size()) {
-        iIdx  = order_. at(iPtr);
-        sIdx1 = ptStack.at(sPtr - 1);
-        sIdx2 = ptStack.at(sPtr - 2);
-        if (orientation(inputData[sIdx2][0], inputData[sIdx2][1],
-                        inputData[sIdx1][0], inputData[sIdx1][1],
-                        inputData[iIdx ][0], inputData[iIdx ][1]) == 1) {
-            ptStack.push_back(iIdx);
-            sPtr++;
-            iPtr++;
+
+    while (iPtr < iSize) {
+        if (ccw(inputData[ptStack[sPtr - 2]][0],
+                inputData[ptStack[sPtr - 2]][1],
+                inputData[ptStack[sPtr - 1]][0],
+                inputData[ptStack[sPtr - 1]][1],
+                inputData[order_[iPtr]][0],
+                inputData[order_[iPtr]][1])) {
+            ptStack[sPtr++] = order_[iPtr++];
         } else {
-            ptStack.pop_back();
             sPtr--;
         }
     }
 
     // handle last point collinear with first
-    if (ptStack.size() >= 3) {
-        unsigned iIdx = order_. at(0),
-                sIdx1 = ptStack.at(sPtr - 1),
-                sIdx2 = ptStack.at(sPtr - 2);
-        if (orientation(inputData[sIdx2][0], inputData[sIdx2][1],
-                        inputData[sIdx1][0], inputData[sIdx1][1],
-                        inputData[iIdx ][0], inputData[iIdx ][1]) != 1) {
-            ptStack.pop_back();
+    if (sPtr >= 3) {
+        if (ccw(inputData[ptStack[sPtr - 2]][0],
+                inputData[ptStack[sPtr - 2]][1],
+                inputData[ptStack[sPtr - 1]][0],
+                inputData[ptStack[sPtr - 1]][1],
+                inputData[order_[0]][0],
+                inputData[order_[0]][1]) == 0) {
+            sPtr--;
         }
     }
 
-    for (auto& i : ptStack) {
-        output.add(inputData[i]);
+    for (unsigned i = 0; i < sPtr; i++) {
+        output.add(inputData[ptStack[i]]);
     }
+    delete[] ptStack;
 }
 
 void GrahamScan2D::sortPointsParallel(const data_t& inputData)

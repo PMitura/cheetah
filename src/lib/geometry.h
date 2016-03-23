@@ -77,9 +77,23 @@ inline double distToLine(point2d_t a, point2d_t b, point2d_t p)
 }
 
 /** finds out on which side does the point lie */
-int orientation(double ax, double ay,
-                double bx, double by,
-                double cx, double cy);
+inline int orientation(const double& ax, const double& ay,
+                       const double& bx, const double& by,
+                       const double& cx, const double& cy)
+{
+    double cross = (ax - bx) * (ay - cy) - (ay - by) * (ax - cx);
+
+    // if (fabs(cross) < EPS) return 0;  // colinear
+    return (cross > EPS) ? 1 : 0; // clockwise or counter clockwise
+}
+
+/** finds out on which side does the point lie */
+inline bool ccw(const double& ax, const double& ay,
+               const double& bx, const double& by,
+               const double& cx, const double& cy)
+{
+    return ((ax - bx) * (ay - cy) - (ay - by) * (ax - cx)) > EPS;
+}
 
 /** finds out if point is in triangle */
 bool ptInTriangle(double ax, double ay,

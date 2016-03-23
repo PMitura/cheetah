@@ -66,7 +66,7 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
     return output;
 }
 
-void Quickhull2D::recParallel(point_t& a, point_t& b, data_t& plane,
+void Quickhull2D::recParallel(point_t a, point_t b, data_t& plane,
                               std::list<point_t>& onHull)
 {
     if (plane.size() == 0) {
@@ -87,7 +87,7 @@ void Quickhull2D::recParallel(point_t& a, point_t& b, data_t& plane,
     }
     std::list<point_t> acList, cbList;
 
-#pragma omp task shared(a, c, acPlane, acList) if (acPlane.size() > 5)
+#pragma omp task shared(acPlane, acList)
         recParallel(a, c, acPlane, acList);
     recParallel(c, b, cbPlane, cbList);
 #pragma omp taskwait
@@ -117,17 +117,18 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
 
     std::list<point_t> topList, botList;
 
-#pragma omp parallel num_threads(4)
+#pragma omp parallel
     {
 #pragma omp single
         {
-#pragma omp task shared(topList) if (topPlane.size() > 5)
+#pragma omp task shared(topList)
                 recParallel(pivotLeft, pivotRight, topPlane, topList);
             recParallel(pivotRight, pivotLeft, botPlane, botList);
 #pragma omp taskwait
         }
     }
 
+    double timeA = omp_get_wtime();
     output.add(pivotLeft);
     for (auto pt : topList) {
         output.add(pt);
@@ -136,6 +137,9 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     for (auto pt : botList) {
         output.add(pt);
     }
+    double timeB = omp_get_wtime();
+
+    D(timeB - timeA);
 
     return output;
 }
@@ -303,6 +307,22 @@ point_t Quickhull2D::planeFarthestPoint(point_t& a, point_t& b,
 void Quickhull2D::divideToPlanes(const data_t& input,
                                  point_t& pivotLeft, point_t& pivotRight,
                                  data_t& topPlane, data_t& botPlane)
+{
+    for (auto& pt : input) {
+        int o = orientation(pivotLeft[0],  pivotLeft[1],
+                            pivotRight[0], pivotRight[1],
+                            pt[0],         pt[1]);
+        if (o == 1) {
+            topPlane.push_back(pt);
+        } else if (o == 2) {
+            botPlane.push_back(pt);
+        }
+    }
+}
+
+void Quickhull2D::divideToPlanesPara(const data_t& input,
+                                     point_t& pivotLeft, point_t& pivotRight,
+                                     data_t& topPlane, data_t& botPlane)
 {
     for (auto& pt : input) {
         int o = orientation(pivotLeft[0],  pivotLeft[1],

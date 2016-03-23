@@ -3,17 +3,6 @@
 namespace ch
 {
 
-int orientation(double ax, double ay,
-                double bx, double by,
-                double cx, double cy)
-{
-    // double cross = (ax - bx) * (ay - bx) - (ay - by) * (cy - by);
-    double cross = (ax - bx) * (ay - cy) - (ay - by) * (ax - cx);
-
-    if (fabs(cross) < EPS) return 0;  // colinear
-    return (cross > EPS) ? 1 : 2; // clockwise or counter clockwise
-}
-
 bool ptInTriangle(double ax, double ay,
                   double bx, double by,
                   double cx, double cy,

@@ -12,7 +12,7 @@ void PerfTest::runAllTests()
     solvers.push_back(new Quickhull2D());
 
     // setup parallelism
-    omp_set_num_threads(1);
+    omp_set_num_threads(4);
 
     // run tests
     // smallTests(solvers);
@@ -45,14 +45,14 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
 {
     // test block instance
     std::vector<Instance> instances;
-    instances.push_back({2500000, 3,     1, 1000});
-    instances.push_back({2500000, 10,    1, 1000});
-    instances.push_back({2500000, 50,    1, 1000});
-    instances.push_back({2500000, 100,   1, 1000});
-    instances.push_back({2500000, 500,   1, 1000});
-    instances.push_back({2500000, 1000,  1, 1000});
-    instances.push_back({2500000, 5000,  1, 1000});
-    instances.push_back({2500000, 10000, 1, 1000});
+    instances.push_back({5000000, 3,     1, 1000});
+    instances.push_back({5000000, 10,    1, 1000});
+    instances.push_back({5000000, 50,    1, 1000});
+    instances.push_back({5000000, 100,   1, 1000});
+    instances.push_back({5000000, 500,   1, 1000});
+    instances.push_back({5000000, 1000,  1, 1000});
+    instances.push_back({5000000, 5000,  1, 1000});
+    instances.push_back({5000000, 10000, 1, 1000});
 
     for (auto& inst : instances) {
         runTestInstance(inst, solvers);
@@ -93,7 +93,7 @@ double PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
 {
     Generator2D generator;
     Points2D input, output;
-    generator.genRandomCircle(n, h, span, input);
+    generator.genUniformCircle(n, h, span, input);
 
     double timeStart = omp_get_wtime();
     solver.solve(input, output);

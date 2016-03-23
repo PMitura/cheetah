@@ -22,7 +22,7 @@ class Quickhull2D : public Solver2D
         void recNaive(point_t& a, point_t& b, data_t& plane);
         Points2D& solveNaive(const Points2D& input, Points2D& output);
 
-        void recParallel(point_t& a, point_t& b, data_t& plane,
+        void recParallel(point_t a, point_t b, data_t& plane,
                          std::list<point_t>& onHull);
         Points2D& solveParallel(const Points2D& input, Points2D& output);
 
@@ -37,6 +37,9 @@ class Quickhull2D : public Solver2D
         void divideToPlanes(const data_t& input,
                             point_t& pivotLeft, point_t& pivotRight,
                             data_t& topPlane, data_t& botPlane);
+        void divideToPlanesPara(const data_t& input,
+                                point_t& pivotLeft, point_t& pivotRight,
+                                data_t& topPlane, data_t& botPlane);
 
         Points2D* globOut_;
 };
