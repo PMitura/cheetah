@@ -8,17 +8,17 @@ void PerfTest::runAllTests()
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
     solvers.push_back(new JarvisScan2D());
-    // solvers.push_back(new GrahamScan2D());
+    solvers.push_back(new GrahamScan2D());
     solvers.push_back(new Quickhull2D());
 
     // setup parallelism
-    omp_set_num_threads(1);
+    omp_set_num_threads(4);
 
     // run tests
     // smallTests(solvers);
 
-    delete *solvers.begin();
-    solvers.erase(solvers.begin()); // jarvis too slow
+    // delete *solvers.begin();
+    // solvers.erase(solvers.begin()); // jarvis too slow
     bigTests(solvers);
 
     // cleanup
@@ -89,7 +89,8 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
 
 }
 
-double PerfTest::runGeneratedTest(int n, int h, double span, Solver2D& solver)
+double PerfTest::runGeneratedTest(unsigned n, unsigned h, double span,
+                                  Solver2D& solver)
 {
     Generator2D generator;
     Points2D input, output;

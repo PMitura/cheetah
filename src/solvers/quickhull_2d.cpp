@@ -87,7 +87,14 @@ void Quickhull2D::recParallel(point_t a, point_t b, data_t& plane,
     }
     std::list<point_t> acList, cbList;
 
-#pragma omp task shared(acPlane, acList)
+    bool cond = (acPlane.size() > plane.size() / 10) && plane.size() > 1000;
+    /*
+    if (cond) {
+        R("split @" << acPlane.size())
+    }
+    */
+
+#pragma omp task shared(acPlane, acList) if (cond)
         recParallel(a, c, acPlane, acList);
     recParallel(c, b, cbPlane, cbList);
 #pragma omp taskwait
@@ -113,7 +120,7 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
             pivotRight = pivots.second;
 
     data_t topPlane, botPlane;
-    divideToPlanesPara(inputData, pivotLeft, pivotRight, topPlane, botPlane);
+    divideToPlanes(inputData, pivotLeft, pivotRight, topPlane, botPlane);
 
     std::list<point_t> topList, botList;
 
@@ -121,7 +128,7 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     {
 #pragma omp single
         {
-#pragma omp task shared(topList, topPlane) if (topList.size() > 1000)
+#pragma omp task shared(topList, topPlane) if (topPlane.size() > input.getSize() / 3)
                 recParallel(pivotLeft, pivotRight, topPlane, topList);
             recParallel(pivotRight, pivotLeft, botPlane, botList);
 #pragma omp taskwait
@@ -322,15 +329,12 @@ void Quickhull2D::divideToPlanesPara(const data_t& input,
 {
     int * med = new int[input.size()];
 
-    double tA = omp_get_wtime();
 #pragma omp parallel for default(shared) schedule(static)
     for (unsigned i = 0; i < input.size(); i++) {
         med[i] = orientation(pivotLeft[0],  pivotLeft[1],
                              pivotRight[0], pivotRight[1],
                              input[i][0],   input[i][1]);
     }
-    double tB = omp_get_wtime();
-    R("") D(tB - tA)
 
     for (unsigned i = 0; i < input.size(); i++) {
         if (med[i] == 1) {

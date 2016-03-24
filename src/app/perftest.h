@@ -59,7 +59,8 @@ class PerfTest
          * @param n size of data set
          * @return execution time of solver
          */
-        double runGeneratedTest(int n, int h, double span, Solver2D& solver);
+        double runGeneratedTest(unsigned n, unsigned h, double span, 
+                                Solver2D& solver);
 
 };
 

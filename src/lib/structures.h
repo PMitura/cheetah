@@ -39,7 +39,7 @@ class PointsND
         inline void clear() { data_.clear(); }
 
         /** Get number of points in set */
-        inline int getSize() const { return data_.size(); }
+        inline unsigned getSize() const { return data_.size(); }
 
         /** Data getter */
         inline const data_t& getData() const { return data_; }
