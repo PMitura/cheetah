@@ -46,6 +46,10 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
 {
     // test block instance
     std::vector<Instance> instances;
+    instances.push_back({1000000, 10,    1, 1000});
+    instances.push_back({2500000, 10,    1, 1000});
+    instances.push_back({5000000, 10,    1, 1000});
+
     instances.push_back({5000000, 3,     1, 1000});
     instances.push_back({5000000, 10,    1, 1000});
     instances.push_back({5000000, 50,    1, 1000});

@@ -16,16 +16,23 @@ Points2D& MonotoneChain2D::solve(const Points2D& input, Points2D& output)
 Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
                                            Points2D& output)
 {
-    if (input.getSize() <= 1) {
+    if (input.getSize() <= 2) {
         output = input;
         return output;
     }
 
-    data_t inputData = input.getData();
+    const data_t& inputData = input.getData();
+    order_.clear();
+    for (unsigned i = 0; i < inputData.size(); i++) {
+        order_.push_back(i);
+    }
+
     double tA = omp_get_wtime();
-    std::sort(inputData.begin(), inputData.end(), PointCmp());
+
+    sortPtsCache(inputData);
+
     double tB = omp_get_wtime();
-    R("") D(tB - tA);
+    R("") R("sort time:  " << tB - tA << " ms") std::cout << "  total time: ";
 
     unsigned * lower = new unsigned[input.getSize()],
              * upper = new unsigned[input.getSize()];
@@ -50,7 +57,7 @@ Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
 Points2D& MonotoneChain2D::solveParallel(const Points2D& input,
                                          Points2D& output)
 {
-
+    output = input;
     return output;
 }
 
@@ -63,11 +70,11 @@ unsigned MonotoneChain2D::scanLower(const data_t& input, unsigned* lower)
                                   input[lower[sSize - 2]][1],
                                   input[lower[sSize - 1]][0],
                                   input[lower[sSize - 1]][1],
-                                  input[i][0],
-                                  input[i][1])) {
+                                  input[order_[i]][0],
+                                  input[order_[i]][1])) {
             sSize--;
         }
-        lower[sSize++] = i;
+        lower[sSize++] = order_[i];
     }
 
     return sSize;
@@ -82,22 +89,47 @@ unsigned MonotoneChain2D::scanUpper(const data_t& input, unsigned* upper)
                                   input[upper[sSize - 2]][1],
                                   input[upper[sSize - 1]][0],
                                   input[upper[sSize - 1]][1],
-                                  input[i][0],
-                                  input[i][1])) {
+                                  input[order_[i]][0],
+                                  input[order_[i]][1])) {
             sSize--;
         }
-        upper[sSize++] = i;
+        upper[sSize++] = order_[i];
     }
 
     return sSize;
 }
 
-bool MonotoneChain2D::PointCmp::operator()(const point_t& a,
-                                           const point_t& b)
+void MonotoneChain2D::sortPtsDirect(const data_t& input)
 {
-    double dif = a[0] - b[0];
+    std::sort(order_.begin(), order_.end(), PointCmpDirect(input));
+}
+
+void MonotoneChain2D::sortPtsCache(const data_t& input)
+{
+    xar_.clear(); yar_.clear();
+    for (unsigned i = 0; i < input.size(); i++) {
+        xar_.push_back(input[i][0]);
+        yar_.push_back(input[i][1]);
+    }
+    std::sort(order_.begin(), order_.end(), PointCmpCache(*this, input));
+}
+
+bool MonotoneChain2D::PointCmpDirect::operator()(const unsigned& a,
+                                                const unsigned& b)
+{
+    double dif = data_[a][0] - data_[b][0];
     if (fabs(dif) < EPS) {
-        return a[1] < b[1];
+        return data_[a][1] > data_[b][1];
+    }
+    return dif > EPS;
+}
+
+bool MonotoneChain2D::PointCmpCache::operator()(const unsigned& a,
+                                                const unsigned& b)
+{
+    double dif = part_.xar_[a] - part_.xar_[b];
+    if (fabs(dif) < EPS) {
+        return part_.yar_[a] > part_.yar_[b];
     }
     return dif > EPS;
 }

@@ -50,7 +50,7 @@ class GrahamScan2D : public Solver2D
         struct AngleCmp {
             AngleCmp(const GrahamScan2D& p, const data_t& d)
                 : part_(p), data_(d) {}
-            bool operator()(const int& a, const int& b);
+            bool operator()(const unsigned& a, const unsigned& b);
             const GrahamScan2D& part_;
             const data_t& data_;
         };

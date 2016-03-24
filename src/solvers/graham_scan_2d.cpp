@@ -52,10 +52,7 @@ Points2D& GrahamScan2D::solveParallel(const Points2D& input, Points2D& output)
     pivot_ = findMinY(inputData);
     std::swap(order_[0], order_[pivot_]);
 
-    double tA = omp_get_wtime();
     sortPointsParallel(inputData);
-    double tB = omp_get_wtime();
-    R("") D(tB - tA);
 
     scan(inputData, output);
 
@@ -147,12 +144,15 @@ void GrahamScan2D::sortPoints(const data_t& inputData)
 
 void GrahamScan2D::sortPointsParallel(const data_t& inputData)
 {
+    double tA = omp_get_wtime();
     computeAngles(inputData);
+    double tB = omp_get_wtime();
+    R("") R("sort time:  " << tB - tA << " ms") std::cout << "  total time: ";
     __gnu_parallel::stable_sort((order_.begin()) + 1, order_.end(),
             AngleCmp(*this, inputData));
 }
 
-bool GrahamScan2D::AngleCmp::operator()(const int& a, const int& b)
+bool GrahamScan2D::AngleCmp::operator()(const unsigned& a, const unsigned& b)
 {
     double x = part_.polar_[a] - part_.polar_[b];
     if (fabs(x) < EPS) {
