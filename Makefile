@@ -3,7 +3,7 @@ NAME := cheetah
 CC := g++
 SRCDIR := src
 BUILDDIR := build
-MODULES := app lib solvers
+MODULES := app approximators lib solvers
 MKBDIR := $(addprefix build/, $(MODULES))
 TARGET := bin/$(NAME)
 
