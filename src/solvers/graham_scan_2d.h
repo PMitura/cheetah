@@ -30,7 +30,7 @@ class GrahamScan2D : public Solver2D
 
         /** Precomputes polar angles of all points, with respect to minY */
         void computeAngles(const data_t& points);
-        
+
         /** Sorts points by polar angle */
         void sortPoints(const data_t& inputData);
 

@@ -8,6 +8,7 @@
 #include "lib/generator.h"
 #include "solvers/jarvis_scan_2d.h"
 #include "solvers/graham_scan_2d.h"
+#include "solvers/monotone_chain_2d.h"
 #include "solvers/quickhull_2d.h"
 
 void printHull2D(ch::Points2D& points, std::ostream& out)
@@ -45,6 +46,7 @@ void testSingleFile(const std::string& filename,
     ch::Points2D input, output;
     ASSERT_TRUE(readFile(filename, input));
     solver.solve(input, output);
+    printHull2D(output, std::cout);
     EXPECT_EQ(expected, output.getSize());
 }
 
@@ -123,6 +125,18 @@ TEST(GrahamScan2DTest, Generated)
 {
     ch::GrahamScan2D graham;
     testSolverGen2D(graham);
+}
+
+TEST(MonotoneChain2DTest, Premade)
+{
+    ch::MonotoneChain2D mono;
+    testSolverPremade2D(mono);
+}
+
+TEST(MonotoneChain2DTest, Generated)
+{
+    ch::MonotoneChain2D mono;
+    testSolverGen2D(mono);
 }
 
 TEST(QuickHull2DTest, Premade)

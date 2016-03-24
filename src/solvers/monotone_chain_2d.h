@@ -23,6 +23,13 @@ class MonotoneChain2D : public Solver2D
     private:
         Points2D& solveSequential(const Points2D& input, Points2D& output);
         Points2D& solveParallel(const Points2D& input, Points2D& output);
+
+        unsigned scanLower(const data_t& input, unsigned* lower);
+        unsigned scanUpper(const data_t& input, unsigned* upper);
+
+        struct PointCmp {
+            bool operator()(const point_t& a, const point_t& b);
+        };
 };
 
 }
