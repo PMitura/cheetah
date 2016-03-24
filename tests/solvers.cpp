@@ -46,7 +46,7 @@ void testSingleFile(const std::string& filename,
     ch::Points2D input, output;
     ASSERT_TRUE(readFile(filename, input));
     solver.solve(input, output);
-    printHull2D(output, std::cout);
+    // printHull2D(output, std::cout);
     EXPECT_EQ(expected, output.getSize());
 }
 

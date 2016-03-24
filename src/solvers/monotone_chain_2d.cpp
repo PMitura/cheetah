@@ -16,13 +16,16 @@ Points2D& MonotoneChain2D::solve(const Points2D& input, Points2D& output)
 Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
                                            Points2D& output)
 {
-    if (input.getSize() <= 2) {
+    if (input.getSize() <= 1) {
         output = input;
         return output;
     }
 
     data_t inputData = input.getData();
+    double tA = omp_get_wtime();
     std::sort(inputData.begin(), inputData.end(), PointCmp());
+    double tB = omp_get_wtime();
+    R("") D(tB - tA);
 
     unsigned * lower = new unsigned[input.getSize()],
              * upper = new unsigned[input.getSize()];

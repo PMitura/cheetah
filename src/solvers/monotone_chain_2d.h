@@ -27,6 +27,8 @@ class MonotoneChain2D : public Solver2D
         unsigned scanLower(const data_t& input, unsigned* lower);
         unsigned scanUpper(const data_t& input, unsigned* upper);
 
+        std::vector<unsigned> order_;
+
         struct PointCmp {
             bool operator()(const point_t& a, const point_t& b);
         };

@@ -10,6 +10,7 @@ GrahamScan2D::GrahamScan2D()
 
 Points2D& GrahamScan2D::solve(const Points2D& input, Points2D& output)
 {
+    // return solveSequential(input, output);
     return solveParallel(input, output);
 }
 
@@ -51,7 +52,10 @@ Points2D& GrahamScan2D::solveParallel(const Points2D& input, Points2D& output)
     pivot_ = findMinY(inputData);
     std::swap(order_[0], order_[pivot_]);
 
+    double tA = omp_get_wtime();
     sortPointsParallel(inputData);
+    double tB = omp_get_wtime();
+    R("") D(tB - tA);
 
     scan(inputData, output);
 
@@ -83,13 +87,6 @@ void GrahamScan2D::computeAngles(const data_t& points)
         dy = points[i][1] - points[pivot_][1];
         polar_.push_back(-(dx / dy));
     }
-}
-
-void GrahamScan2D::sortPoints(const data_t& inputData)
-{
-    computeAngles(inputData);
-    std::stable_sort((order_.begin()) + 1, order_.end(),
-            AngleCmp(*this, inputData));
 }
 
 void GrahamScan2D::scan(const data_t& inputData, Points2D& output)
@@ -139,6 +136,13 @@ void GrahamScan2D::scan(const data_t& inputData, Points2D& output)
         output.add(inputData[ptStack[i]]);
     }
     delete[] ptStack;
+}
+
+void GrahamScan2D::sortPoints(const data_t& inputData)
+{
+    computeAngles(inputData);
+    std::stable_sort((order_.begin()) + 1, order_.end(),
+            AngleCmp(*this, inputData));
 }
 
 void GrahamScan2D::sortPointsParallel(const data_t& inputData)
