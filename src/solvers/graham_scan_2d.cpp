@@ -144,10 +144,7 @@ void GrahamScan2D::sortPoints(const data_t& inputData)
 
 void GrahamScan2D::sortPointsParallel(const data_t& inputData)
 {
-    double tA = omp_get_wtime();
     computeAngles(inputData);
-    double tB = omp_get_wtime();
-    R("") R("sort time:  " << tB - tA << " ms") std::cout << "  total time: ";
     __gnu_parallel::stable_sort((order_.begin()) + 1, order_.end(),
             AngleCmp(*this, inputData));
 }

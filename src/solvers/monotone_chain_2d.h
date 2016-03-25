@@ -29,6 +29,7 @@ class MonotoneChain2D : public Solver2D
 
         void sortPtsDirect(const data_t& input);
         void sortPtsCache(const data_t& input);
+        void sortPtsParallel(const data_t& input);
 
         std::vector<unsigned> order_;
         std::vector<double> xar_, yar_;

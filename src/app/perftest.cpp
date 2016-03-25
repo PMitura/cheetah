@@ -13,7 +13,7 @@ void PerfTest::runAllTests()
     // solvers.push_back(new Quickhull2D());
 
     // setup parallelism
-    omp_set_num_threads(1);
+    omp_set_num_threads(4);
 
     // run tests
     // smallTests(solvers);

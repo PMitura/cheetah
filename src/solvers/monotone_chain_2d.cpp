@@ -10,7 +10,8 @@ MonotoneChain2D::MonotoneChain2D()
 
 Points2D& MonotoneChain2D::solve(const Points2D& input, Points2D& output)
 {
-    return solveSequential(input, output);
+    // return solveSequential(input, output);
+    return solveParallel(input, output);
 }
 
 Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
@@ -28,9 +29,7 @@ Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
     }
 
     double tA = omp_get_wtime();
-
-    sortPtsCache(inputData);
-
+    sortPtsDirect(inputData);
     double tB = omp_get_wtime();
     R("") R("sort time:  " << tB - tA << " ms") std::cout << "  total time: ";
 
@@ -57,7 +56,49 @@ Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
 Points2D& MonotoneChain2D::solveParallel(const Points2D& input,
                                          Points2D& output)
 {
-    output = input;
+    if (input.getSize() <= 2) {
+        output = input;
+        return output;
+    }
+
+    const data_t& inputData = input.getData();
+    order_.clear();
+    for (unsigned i = 0; i < inputData.size(); i++) {
+        order_.push_back(i);
+    }
+
+    double tA = omp_get_wtime();
+    sortPtsParallel(inputData);
+    double tB = omp_get_wtime();
+    R("") R("sort time:  " << tB - tA << " ms") std::cout << "  total time: ";
+
+    unsigned * lower = new unsigned[input.getSize()],
+             * upper = new unsigned[input.getSize()];
+
+    unsigned lowerSize, upperSize;
+#pragma omp parallel
+    {
+#pragma omp sections
+        {
+#pragma omp section
+            lowerSize = scanLower(inputData, lower);
+#pragma omp section
+            upperSize = scanUpper(inputData, upper);
+        }
+    }
+
+    // do not include last points to avoid duplicates
+    for (unsigned i = 0; i < lowerSize - 1; i++) {
+        output.add(inputData[lower[i]]);
+    }
+    delete[] lower;
+
+    for (unsigned i = 0; i < upperSize - 1; i++) {
+        output.add(inputData[upper[i]]);
+    }
+    delete[] upper;
+
+    return output;
     return output;
 }
 
@@ -112,6 +153,17 @@ void MonotoneChain2D::sortPtsCache(const data_t& input)
         yar_.push_back(input[i][1]);
     }
     std::sort(order_.begin(), order_.end(), PointCmpCache(*this, input));
+}
+
+void MonotoneChain2D::sortPtsParallel(const data_t& input)
+{
+    xar_.clear(); yar_.clear();
+    for (unsigned i = 0; i < input.size(); i++) {
+        xar_.push_back(input[i][0]);
+        yar_.push_back(input[i][1]);
+    }
+    __gnu_parallel::stable_sort(order_.begin(), order_.end(),
+                                PointCmpCache(*this, input));
 }
 
 bool MonotoneChain2D::PointCmpDirect::operator()(const unsigned& a,
