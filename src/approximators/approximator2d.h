@@ -6,7 +6,7 @@ namespace ch
 {
 
 /**
- * Abstract class serving as a template for 2d convex hull solver.
+ * Abstract class serving as a template for 2d convex hull approximator.
  */
 class Appproximator2D
 {
@@ -14,10 +14,10 @@ class Appproximator2D
         virtual ~Appproximator2D() {}
 
         /**
-         * Find convex hull of input data set.
+         * Find convex hull approximation of input data set.
          *
          * @param inputSet Input data set
-         * @return Convex hull of input data set.
+         * @return convex hull approximation of input data set.
          */
         virtual Points2D& approximate(const Points2D& input,
                                       Points2D& output) = 0;
@@ -25,7 +25,7 @@ class Appproximator2D
         inline std::string getName() { return name_; }
 
     protected:
-        /** name of solver */
+        /** name of approximator */
         std::string name_;
 };
 
