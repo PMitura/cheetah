@@ -7,20 +7,23 @@ void PerfTest::runAllTests()
 {
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
-    // solvers.push_back(new JarvisScan2D());
+    solvers.push_back(new JarvisScan2D());
     solvers.push_back(new GrahamScan2D());
     solvers.push_back(new MonotoneChain2D());
-    // solvers.push_back(new Quickhull2D());
+    solvers.push_back(new Quickhull2D());
 
     // setup parallelism
-    omp_set_num_threads(4);
+    omp_set_num_threads(1);
 
     // run tests
     // smallTests(solvers);
 
     // delete *solvers.begin();
     // solvers.erase(solvers.begin()); // jarvis too slow
-    bigTests(solvers);
+    // bigTests(solvers);
+
+    // approximation tests
+    BFP2D bfp; approxTests(bfp);
 
     // cleanup
     for (auto solver : solvers) {
@@ -109,6 +112,49 @@ double PerfTest::runGeneratedTest(unsigned n, unsigned h, double span,
         return -1;
     }
     return timeEnd - timeStart;
+}
+
+void PerfTest::approxTests(Approximator2D& scheme)
+{
+    std::vector<Instance> instances;
+    instances.push_back({5000000, 100, 1, 1000});
+
+    for (auto& inst : instances) {
+        runApproxInstance(inst, scheme);
+    }
+}
+
+void PerfTest::runApproxInstance(Instance& inst, Approximator2D& scheme)
+{
+    std::cout << std::endl << "Approximation " << scheme.getName()
+              << " on set of size " << inst.n << " points, " << inst.h
+              << " on hull, averaged from " << inst.runs << " runs."
+              << std::endl;
+    int totalHull = 0;
+    double totalTime = 0;
+    Generator2D generator;
+    Points2D input, output;
+    for (int i = 0; i < inst.runs; i++) {
+        output.clear();
+        generator.genRandomCircle(inst.n, inst.h, inst.span, input);
+        double timeStart = omp_get_wtime();
+        scheme.approximate(input, output);
+        double timeEnd = omp_get_wtime();
+
+        totalHull += output.getSize();
+        totalTime += timeEnd - timeStart;
+    }
+    double reached = ((double) totalHull)
+                   / ((double) scheme.maxReachable() * inst.runs),
+           target  = ((double) inst.h) / inst.n;
+
+    std::cout << "  avg on hull:    " << (double) totalHull / inst.runs
+              << " points" << std::endl;
+    std::cout << "  target percent: " << target * 100 << "%"
+              << std::endl;
+    std::cout << "  actual percent: " << reached * 100 << "%"
+              << std::endl;
+    std::cout << "  total time " << totalTime << " ms" << std::endl;
 }
 
 }

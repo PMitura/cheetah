@@ -7,13 +7,15 @@
 namespace ch
 {
 
-class BFP2D : public Appproximator2D
+class BFP2D : public Approximator2D
 {
     public:
         BFP2D();
         Points2D& approximate(const Points2D& input, Points2D& output);
+        int maxReachable() const;
 
     private:
+        int stripsCount_;
         Points2D& sequential(const Points2D& input, Points2D& output);
 
 };

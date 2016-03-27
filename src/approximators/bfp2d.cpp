@@ -6,6 +6,7 @@ namespace ch
 BFP2D::BFP2D()
 {
     name_ = "BFP";
+    stripsCount_ = 5000000;
 }
 
 Points2D& BFP2D::approximate(const Points2D& input, Points2D& output)
@@ -22,7 +23,7 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
     }
 
     // fixed parameter, higher number means more accuracy
-    const int stripsCount = 100;
+    const int stripsCount_ = 100;
     const data_t& inputData = input.getData();
 
     // find extremes
@@ -72,16 +73,16 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
     }
 
     // indexes of min/max in strips
-    std::vector<std::pair<int, int>> strips(stripsCount + 2);
+    std::vector<std::pair<int, int>> strips(stripsCount_ + 2);
     strips.front() = {minXminY, minXmaxY};
     strips.back()  = {maxXminY, maxXmaxY};
-    for (int i = 1; i < stripsCount - 1; i++) {
+    for (int i = 1; i < stripsCount_ - 1; i++) {
         strips[i] = {-1, -1};
     }
 
     // sort points into strips
     unsigned sIdx;
-    for (int i = 0; i < inputData.size(); i++) {
+    for (unsigned i = 0; i < inputData.size(); i++) {
         const point_t& curr = inputData[i];
         // first / last strip
         if (   fabs(curr[0] - inputData[minXminY][0]) < EPS
@@ -90,7 +91,7 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
         }
         if (!ccw(inputData[minXminY], inputData[maxXminY], curr)) {
             // below low
-            sIdx = stripsCount * (curr[0] - minX) / (maxX - minX) + 1;
+            sIdx = stripsCount_ * (curr[0] - minX) / (maxX - minX) + 1;
             if (strips[sIdx].first == -1) {
                 strips[sIdx].first = i;
             } else if (curr[1] > inputData[strips[sIdx].first][1] + EPS) {
@@ -98,7 +99,7 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
             }
         } else if (ccw(inputData[minXmaxY], inputData[maxXmaxY], curr)) {
             // above high
-            sIdx = stripsCount * (curr[0] - minX) / (maxX - minX) + 1;
+            sIdx = stripsCount_ * (curr[0] - minX) / (maxX - minX) + 1;
             if (strips[sIdx].second == -1) {
                 strips[sIdx].second = i;
             } else if (curr[1] > inputData[strips[sIdx].second][1] + EPS) {
@@ -108,9 +109,9 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
     }
 
     // scan lower - same as in monochain
-    std::vector<unsigned> pStack(stripsCount + 3);
+    std::vector<unsigned> pStack(stripsCount_ + 3);
     int sSize = 0, curr;
-    for (int i = 0; i < stripsCount + 2; i++) {
+    for (int i = 0; i < stripsCount_ + 2; i++) {
         curr = strips[i].first;
         if (curr == -1) {
             continue;
@@ -122,13 +123,13 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
         }
         pStack[sSize++] = curr;
     }
-    for (int i = 0; i < sSize; i++) {
+    for (int i = 0; i < sSize - 1; i++) {
         output.add(inputData[pStack[i]]);
     }
 
     // scan upper
     sSize = 0; pStack.clear();
-    for (int i = stripsCount + 1; i >= 0; i++) {
+    for (int i = stripsCount_ + 1; i >= 0; i--) {
         curr = strips[i].second;
         if (curr == -1) {
             continue;
@@ -140,11 +141,16 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
         }
         pStack[sSize++] = curr;
     }
-    for (int i = 0; i < sSize; i++) {
+    for (int i = 0; i < sSize - 1; i++) {
         output.add(inputData[pStack[i]]);
     }
 
     return output;
+}
+
+int BFP2D::maxReachable() const
+{
+    return 2 * stripsCount_;
 }
 
 }

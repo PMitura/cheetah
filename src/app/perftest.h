@@ -6,6 +6,8 @@
 #include <ctime>
 #include <omp.h>
 
+#include "approximators/approximator2d.h"
+#include "approximators/bfp2d.h"
 #include "lib/generator.h"
 #include "lib/structures.h"
 #include "solvers/solver_2d.h"
@@ -81,6 +83,17 @@ class PerfTest
          */
         double runSpecifiedTest(unsigned h, Solver2D& solver,
                                 Points2D& output);
+
+        /**
+         * Asseses performance of an aprroximation scheme.
+         *
+         * Performance is based on relative number of hull points, since this
+         * is the only parameter that concerns us when selecting solver based
+         * on approximation.
+         */
+        void approxTests(Approximator2D& scheme);
+
+        void runApproxInstance(Instance& inst, Approximator2D& scheme);
 
 };
 

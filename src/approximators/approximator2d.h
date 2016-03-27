@@ -8,10 +8,10 @@ namespace ch
 /**
  * Abstract class serving as a template for 2d convex hull approximator.
  */
-class Appproximator2D
+class Approximator2D
 {
     public:
-        virtual ~Appproximator2D() {}
+        virtual ~Approximator2D() {}
 
         /**
          * Find convex hull approximation of input data set.
@@ -23,6 +23,9 @@ class Appproximator2D
                                       Points2D& output) = 0;
 
         inline std::string getName() { return name_; }
+
+        /** Returns maximum reachable number of points on output hull */
+        virtual int maxReachable() const = 0;
 
     protected:
         /** name of approximator */
