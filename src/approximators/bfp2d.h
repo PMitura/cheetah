@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "approximators/approximator2d.h"
 #include "lib/geometry.h"
 #include "lib/structures.h"

@@ -20,10 +20,10 @@ void PerfTest::runAllTests()
 
     // delete *solvers.begin();
     // solvers.erase(solvers.begin()); // jarvis too slow
-    // bigTests(solvers);
+    bigTests(solvers);
 
     // approximation tests
-    BFP2D bfp; approxTests(bfp);
+    // BFP2D bfp; approxTests(bfp);
 
     // cleanup
     for (auto solver : solvers) {
@@ -49,10 +49,8 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
 {
     // test block instance
     std::vector<Instance> instances;
-    instances.push_back({1000000, 10,    1, 1000});
-    instances.push_back({2500000, 10,    1, 1000});
-    instances.push_back({5000000, 10,    1, 1000});
 
+    /*
     instances.push_back({5000000, 3,     1, 1000});
     instances.push_back({5000000, 10,    1, 1000});
     instances.push_back({5000000, 50,    1, 1000});
@@ -61,6 +59,7 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     instances.push_back({5000000, 1000,  1, 1000});
     instances.push_back({5000000, 5000,  1, 1000});
     instances.push_back({5000000, 10000, 1, 1000});
+    */
 
     for (auto& inst : instances) {
         runTestInstance(inst, solvers);
@@ -117,7 +116,7 @@ double PerfTest::runGeneratedTest(unsigned n, unsigned h, double span,
 void PerfTest::approxTests(Approximator2D& scheme)
 {
     std::vector<Instance> instances;
-    instances.push_back({5000000, 100, 1, 1000});
+    instances.push_back({5000000, 500, 1, 1000});
 
     for (auto& inst : instances) {
         runApproxInstance(inst, scheme);

@@ -23,7 +23,7 @@ Points2D& BFP2D::sequential(const Points2D& input, Points2D& output)
     }
 
     // fixed parameter, higher number means more accuracy
-    const int stripsCount_ = 100;
+    stripsCount_ = std::max(10, (int) input.getSize() / 2000);
     const data_t& inputData = input.getData();
 
     // find extremes
