@@ -50,6 +50,12 @@ class PerfTest
          */
         void bigTests(std::vector<Solver2D*> solvers);
 
+        /**
+         * Runs single instance of test, on group of solvers.
+         *
+         * @param inst instance parameters
+         * @param solvers solvers to use on specified instance
+         */
         void runTestInstance(Instance& inst, std::vector<Solver2D*> solvers);
 
         /**
@@ -58,10 +64,23 @@ class PerfTest
          * Time to generate data is not counted.
          *
          * @param n size of data set
+         * @param h target number of points on hull
+         * @param span contraints on input set coordinates
+         * @param solver solver to use
          * @return execution time of solver
          */
         double runGeneratedTest(unsigned n, unsigned h, double span, 
                                 Solver2D& solver);
+
+        /**
+         * Runs single test with specified input.
+         *
+         * @param h expected number of hull points
+         * @param solver solver to use
+         * @param 
+         */
+        double runSpecifiedTest(unsigned h, Solver2D& solver,
+                                Points2D& output);
 
 };
 

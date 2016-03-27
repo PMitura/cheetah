@@ -89,10 +89,17 @@ inline int orientation(const double& ax, const double& ay,
 
 /** finds out on which side does the point lie */
 inline bool ccw(const double& ax, const double& ay,
-               const double& bx, const double& by,
-               const double& cx, const double& cy)
+                const double& bx, const double& by,
+                const double& cx, const double& cy)
 {
     return ((ax - bx) * (ay - cy) - (ay - by) * (ax - cx)) > EPS;
+}
+inline bool ccw(const point_t& a,
+                const point_t& b,
+                const point_t& c)
+{
+    return  ((a[0] - b[0]) * (a[1] - c[1])
+           - (a[1] - b[1]) * (a[0] - c[0])) > EPS;
 }
 
 /** finds out if point is in triangle */
