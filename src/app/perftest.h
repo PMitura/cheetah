@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <vector>
 #include <ctime>
 #include <omp.h>
@@ -53,6 +54,18 @@ class PerfTest
         void bigTests(std::vector<Solver2D*> solvers);
 
         /**
+         * Runs series of tests to find edges for various input sizes.
+         */
+        void testEdges();
+
+        /**
+         * Finds point where QH beats JS, and GS beats QH.
+         *
+         * @param setSize number of points in input set
+         */
+        void findEdge(int setSize);
+
+        /**
          * Runs single instance of test, on group of solvers.
          *
          * @param inst instance parameters
@@ -94,6 +107,9 @@ class PerfTest
         void approxTests(Approximator2D& scheme);
 
         void runApproxInstance(Instance& inst, Approximator2D& scheme);
+
+        /** File for logging results */
+        std::ofstream logFile_;
 
 };
 
