@@ -65,19 +65,19 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     instances.push_back({1000000, 6,  1, 1000});
     instances.push_back({1000000, 10, 1, 1000});
     instances.push_back({1000000, 17, 1, 1000});
-    for (int hull = 26; hull <= 1000; hull += 25) {
-        instances.push_back({5000000, hull, 1, 1000});
+    for (int hull = 25; hull <= 1000; hull += 25) {
+        instances.push_back({1000000, hull, 1, 1000});
     }
     */
 
-    logFile_.open("aside/dummy.data");
+    logFile_.open("aside/dummy2.data");
     if (!logFile_.is_open()) {
         std::cout << "Error opening logfile" << std::endl;
         return;
     }
     for (auto& inst : instances) {
         // don't run jarvis later
-        if (inst.h == 200) {
+        if (inst.h == 0) {
             delete *solvers.end();
             solvers.pop_back();
         }

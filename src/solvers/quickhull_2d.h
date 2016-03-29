@@ -24,7 +24,10 @@ class Quickhull2D : public Solver2D
         Points2D& solveNaive(const Points2D& input, Points2D& output);
 
         void recOptimal(point_t& a, point_t& b, point_t& c, data_t& plane);
+        void recSplit(point_t& a, point_t& b, point_t& c, data_t& plane,
+                      bool upper);
         Points2D& solveOptimal(const Points2D& input, Points2D& output);
+        Points2D& solvePreprocessed(const Points2D& input, Points2D& output);
 
         void recParallel(point_t a, point_t b, data_t& plane,
                          std::list<point_t>& onHull);
