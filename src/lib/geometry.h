@@ -76,6 +76,21 @@ inline double distToLine(point2d_t a, point2d_t b, point2d_t p)
     return dist(p, c);
 }
 
+inline double partCross(const double& cx, const double& cy,
+                        const double& alpha, const double& beta,
+                        const double& gamma)
+{
+    return alpha * cx - beta * cy + gamma;
+}
+
+/** returns cross product of two vectors */
+inline double cross(const double& ax, const double& ay,
+                    const double& bx, const double& by,
+                    const double& cx, const double& cy)
+{
+    return (ax - bx) * (ay - cy) - (ay - by) * (ax - cx);
+}
+
 /** finds out on which side does the point lie */
 inline int orientation(const double& ax, const double& ay,
                        const double& bx, const double& by,

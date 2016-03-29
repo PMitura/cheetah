@@ -11,8 +11,9 @@ Quickhull2D::Quickhull2D()
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
 {
-    return solveParallel(input, output);
+    // return solveParallel(input, output);
     // return solveNaive(input, output);
+    return solveOptimal(input, output);
     // return solveIterative(input, output);
 }
 
@@ -22,7 +23,7 @@ void Quickhull2D::recNaive(point_t& a, point_t& b, data_t& plane)
         return;
 
     // find point c farthest from ab
-    point_t c = planeFarthestPoint(a, b, plane);
+    point_t c = planeFarthestDist(a, b, plane);
 
     data_t acPlane, cbPlane;
 
@@ -74,7 +75,7 @@ void Quickhull2D::recParallel(point_t a, point_t b, data_t& plane,
     }
 
     // find point c farthest from ab
-    point_t c = planeFarthestPoint(a, b, plane);
+    point_t c = planeFarthestDist(a, b, plane);
 
     data_t acPlane, cbPlane;
 
@@ -103,6 +104,95 @@ void Quickhull2D::recParallel(point_t a, point_t b, data_t& plane,
     onHull.splice(onHull.end(), acList);
     onHull.push_back(c);
     onHull.splice(onHull.end(), cbList);
+}
+
+void Quickhull2D::recOptimal(point_t& a, point_t& b, point_t& c,
+                             data_t& plane)
+{
+    if (plane.size() == 0)
+        return;
+
+    data_t acPlane, cbPlane;
+    double acMax = -1, cbMax = -1;
+    point_t acFar, cbFar;
+
+    // precompute part of cross product
+    double acAlpha = a[1] - c[1], acBeta = a[0] - c[0],
+           acGamma = acBeta*c[1] - acAlpha*c[0],
+           cbAlpha = c[1] - b[1], cbBeta = c[0] - b[0],
+           cbGamma = cbBeta*b[1] - cbAlpha*b[0];
+    for (auto& pt : plane) {
+        double aco = partCross(pt[0], pt[1], acAlpha, acBeta, acGamma);
+        if (aco > EPS) {
+            acPlane.push_back(pt);
+            if (fabs(aco) > acMax) {
+                acFar = pt;
+                acMax = fabs(aco);
+            }
+            continue;
+        }
+        double cbo = partCross(pt[0], pt[1], cbAlpha, cbBeta, cbGamma);
+        if (cbo > EPS) {
+            cbPlane.push_back(pt);
+            if (fabs(cbo) > cbMax) {
+                cbFar = pt;
+                cbMax = fabs(cbo);
+            }
+        }
+    }
+
+    recOptimal(a, c, acFar, acPlane);
+    globOut_ -> add(c);
+    recOptimal(c, b, cbFar, cbPlane);
+}
+
+Points2D& Quickhull2D::solveOptimal(const Points2D& input, Points2D& output)
+{
+    if (input.getSize() <= 2) {
+        output = input;
+        return output;
+    }
+
+    globOut_ = &output;
+    const data_t& inputData = input.getData();
+
+    // alt std::pair<point_t, point_t> pivots = minMaxX(inputData);
+    std::pair<point_t, point_t> pivots = farthestPoints(inputData);
+    point_t pivotLeft  = pivots.first,
+            pivotRight = pivots.second;
+
+    data_t topPlane, botPlane;
+    // future farthest points
+    double topMax = -1, botMax = -1;
+    point_t topFar, botFar;
+
+    // extended divide to planes
+    for (auto& pt : inputData) {
+        double o = cross(pivotLeft[0],  pivotLeft[1],
+                         pivotRight[0], pivotRight[1],
+                         pt[0],         pt[1]);
+        if (o > EPS) {
+            topPlane.push_back(pt);
+            if (fabs(o) > topMax) {
+                topFar = pt;
+                topMax = fabs(o);
+            }
+        } else if (o < -EPS) {
+            botPlane.push_back(pt);
+            if (fabs(o) > botMax) {
+                botFar = pt;
+                botMax = fabs(o);
+            }
+        }
+    }
+
+    // recursive part
+    output.add(pivotLeft);
+    recOptimal(pivotLeft, pivotRight, topFar, topPlane);
+    output.add(pivotRight);
+    recOptimal(pivotRight, pivotLeft, botFar, botPlane);
+
+    return output;
 }
 
 Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
@@ -195,7 +285,7 @@ Points2D& Quickhull2D::solveIterative(const Points2D& input, Points2D& output)
             }
 
             point_t a = curr -> a, b = curr -> b,
-                    c = planeFarthestPoint(a, b, curr -> see);
+                    c = planeFarthestDist(a, b, curr -> see);
             Face * ac = new Face, * cb = new Face, * adder = new Face;
             ac -> a = a; ac -> b = c; ac -> save = 0;
             cb -> a = c; cb -> b = b; cb -> save = 0;
@@ -291,7 +381,23 @@ std::pair<point_t, point_t> Quickhull2D::farthestPoints(const data_t& points)
     return farthest;
 }
 
-point_t Quickhull2D::planeFarthestPoint(point_t& a, point_t& b,
+point_t Quickhull2D::planeFarthestCross(point_t& a, point_t& b,
+                                        const data_t& plane)
+{
+    point_t c = plane[0];
+    double maxCross = cross(a[0], a[1], b[0], b[1], c[0], c[1]),
+           currCross;
+    for (auto& pt : plane) {
+        currCross = cross(a[0], a[1], b[0], b[1], pt[0], pt[1]);
+        if (maxCross - currCross < -EPS) {
+            maxCross = currCross;
+            c = pt;
+        }
+    }
+    return c;
+}
+
+point_t Quickhull2D::planeFarthestDist(point_t& a, point_t& b,
                                         const data_t& plane)
 {
     point_t c = plane[0];

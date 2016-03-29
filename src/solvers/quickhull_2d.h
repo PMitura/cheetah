@@ -22,6 +22,9 @@ class Quickhull2D : public Solver2D
         void recNaive(point_t& a, point_t& b, data_t& plane);
         Points2D& solveNaive(const Points2D& input, Points2D& output);
 
+        void recOptimal(point_t& a, point_t& b, point_t& c, data_t& plane);
+        Points2D& solveOptimal(const Points2D& input, Points2D& output);
+
         void recParallel(point_t a, point_t b, data_t& plane,
                          std::list<point_t>& onHull);
         Points2D& solveParallel(const Points2D& input, Points2D& output);
@@ -31,7 +34,10 @@ class Quickhull2D : public Solver2D
         std::pair<point_t, point_t> minMaxX(const data_t& points);
         std::pair<point_t, point_t> farthestPoints(const data_t& points);
 
-        point_t planeFarthestPoint(point_t& a, point_t& b,
+        point_t planeFarthestCross(point_t& a, point_t& b,
+                                   const data_t& plane);
+
+        point_t planeFarthestDist(point_t& a, point_t& b,
                                    const data_t& plane);
 
         void divideToPlanes(const data_t& input,

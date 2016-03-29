@@ -7,10 +7,10 @@ void PerfTest::runAllTests()
 {
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
-    solvers.push_back(new GrahamScan2D());
-    solvers.push_back(new MonotoneChain2D());
+    // solvers.push_back(new GrahamScan2D());
+    // solvers.push_back(new MonotoneChain2D());
     solvers.push_back(new Quickhull2D());
-    solvers.push_back(new JarvisScan2D());
+    // solvers.push_back(new JarvisScan2D());
 
     // setup parallelism
     omp_set_num_threads(1);
@@ -20,8 +20,8 @@ void PerfTest::runAllTests()
 
     // delete *solvers.begin();
     // solvers.erase(solvers.begin()); // jarvis too slow
-    // bigTests(solvers);
-    testEdges();
+    bigTests(solvers);
+    // testEdges();
 
     // approximation tests
     // BFP2D bfp; approxTests(bfp);
@@ -51,7 +51,6 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     // test block instance
     std::vector<Instance> instances;
 
-    /*
     instances.push_back({5000000, 3,     1, 1000});
     instances.push_back({5000000, 10,    1, 1000});
     instances.push_back({5000000, 50,    1, 1000});
@@ -60,17 +59,18 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     instances.push_back({5000000, 1000,  1, 1000});
     instances.push_back({5000000, 5000,  1, 1000});
     instances.push_back({5000000, 10000, 1, 1000});
-    */
 
+    /*
     instances.push_back({1000000, 3,  1, 1000});
     instances.push_back({1000000, 6,  1, 1000});
     instances.push_back({1000000, 10, 1, 1000});
     instances.push_back({1000000, 17, 1, 1000});
-    for (int hull = 25; hull <= 1000; hull += 25) {
-        instances.push_back({1000000, hull, 1, 1000});
+    for (int hull = 26; hull <= 1000; hull += 25) {
+        instances.push_back({5000000, hull, 1, 1000});
     }
+    */
 
-    logFile_.open("aside/log2.data");
+    logFile_.open("aside/dummy.data");
     if (!logFile_.is_open()) {
         std::cout << "Error opening logfile" << std::endl;
         return;
