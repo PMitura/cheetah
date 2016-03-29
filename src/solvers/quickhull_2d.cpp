@@ -118,12 +118,16 @@ void Quickhull2D::recOptimal(point_t& a, point_t& b, point_t& c,
 
     // precompute part of cross product
     double acAlpha = a[1] - c[1], acBeta = a[0] - c[0],
-           acGamma = acBeta*c[1] - acAlpha*c[0],
+           acGamma = acBeta*a[1] - acAlpha*a[0],
            cbAlpha = c[1] - b[1], cbBeta = c[0] - b[0],
-           cbGamma = cbBeta*b[1] - cbAlpha*b[0];
+           cbGamma = cbBeta*c[1] - cbAlpha*c[0];
+    // precomputing lessens precision
+    double LEPS = 1e-8;
+
     for (auto& pt : plane) {
         double aco = partCross(pt[0], pt[1], acAlpha, acBeta, acGamma);
-        if (aco > EPS) {
+        // double aco = cross(a[0], a[1], c[0], c[1], pt[0], pt[1]);
+        if (aco > LEPS) {
             acPlane.push_back(pt);
             if (fabs(aco) > acMax) {
                 acFar = pt;
@@ -132,7 +136,8 @@ void Quickhull2D::recOptimal(point_t& a, point_t& b, point_t& c,
             continue;
         }
         double cbo = partCross(pt[0], pt[1], cbAlpha, cbBeta, cbGamma);
-        if (cbo > EPS) {
+        // double cbo = cross(c[0], c[1], b[0], b[1], pt[0], pt[1]);
+        if (cbo > LEPS) {
             cbPlane.push_back(pt);
             if (fabs(cbo) > cbMax) {
                 cbFar = pt;
@@ -166,18 +171,28 @@ Points2D& Quickhull2D::solveOptimal(const Points2D& input, Points2D& output)
     double topMax = -1, botMax = -1;
     point_t topFar, botFar;
 
+    // precompute cross product
+    double alpha = pivotLeft[1] - pivotRight[1],
+           beta  = pivotLeft[0] - pivotRight[0],
+           gamma = beta*pivotLeft[1] - alpha*pivotLeft[0];
+    // precomputing lessens precision
+    double LEPS = 1e-8;
+
     // extended divide to planes
     for (auto& pt : inputData) {
+        /*
         double o = cross(pivotLeft[0],  pivotLeft[1],
                          pivotRight[0], pivotRight[1],
                          pt[0],         pt[1]);
-        if (o > EPS) {
+                         */
+        double o = partCross(pt[0], pt[1], alpha, beta, gamma);
+        if (o > LEPS) {
             topPlane.push_back(pt);
             if (fabs(o) > topMax) {
                 topFar = pt;
                 topMax = fabs(o);
             }
-        } else if (o < -EPS) {
+        } else if (o < -LEPS) {
             botPlane.push_back(pt);
             if (fabs(o) > botMax) {
                 botFar = pt;
