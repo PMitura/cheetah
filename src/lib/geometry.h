@@ -88,7 +88,7 @@ inline double cross(const double& ax, const double& ay,
                     const double& bx, const double& by,
                     const double& cx, const double& cy)
 {
-    return (ax - bx) * (ay - cy) - (ay - by) * (ax - cx);
+    return (ax - bx) * (by - cy) - (ay - by) * (bx - cx);
 }
 
 /** finds out on which side does the point lie */
@@ -96,7 +96,7 @@ inline int orientation(const double& ax, const double& ay,
                        const double& bx, const double& by,
                        const double& cx, const double& cy)
 {
-    double cross = (ax - bx) * (ay - cy) - (ay - by) * (ax - cx);
+    double cross = (ax - bx) * (by - cy) - (ay - by) * (bx - cx);
 
     if (fabs(cross) < EPS) return 0;  // colinear
     return (cross > EPS) ? 1 : 2; // clockwise or counter clockwise
@@ -107,14 +107,14 @@ inline bool ccw(const double& ax, const double& ay,
                 const double& bx, const double& by,
                 const double& cx, const double& cy)
 {
-    return ((ax - bx) * (ay - cy) - (ay - by) * (ax - cx)) > EPS;
+    return ((ax - bx) * (by - cy) - (ay - by) * (bx - cx)) > EPS;
 }
 inline bool ccw(const point_t& a,
                 const point_t& b,
                 const point_t& c)
 {
-    return  ((a[0] - b[0]) * (a[1] - c[1])
-           - (a[1] - b[1]) * (a[0] - c[0])) > EPS;
+    return  ((a[0] - b[0]) * (b[1] - c[1])
+           - (a[1] - b[1]) * (b[0] - c[0])) > EPS;
 }
 
 /** finds out if point is in triangle */

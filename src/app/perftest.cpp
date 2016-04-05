@@ -70,7 +70,7 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     }
     */
 
-    logFile_.open("aside/dummy2.data");
+    logFile_.open("aside/dummy.data");
     if (!logFile_.is_open()) {
         std::cout << "Error opening logfile" << std::endl;
         return;
