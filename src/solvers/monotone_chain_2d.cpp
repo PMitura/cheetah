@@ -28,10 +28,7 @@ Points2D& MonotoneChain2D::solveSequential(const Points2D& input,
         order_.push_back(i);
     }
 
-    double tA = omp_get_wtime();
     sortPtsDirect(inputData);
-    double tB = omp_get_wtime();
-    R("") R("sort time:  " << tB - tA << " ms") std::cout << "  total time: ";
 
     unsigned * lower = new unsigned[input.getSize()],
              * upper = new unsigned[input.getSize()];
