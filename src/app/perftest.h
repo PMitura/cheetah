@@ -108,6 +108,14 @@ class PerfTest
 
         void runApproxInstance(Instance& inst, Approximator2D& scheme);
 
+        /**
+         * Prints single list of points
+         *
+         * @param points list of points to print
+         * @param output target stream
+         */
+        void printPoints(Points2D& points, std::ofstream& output);
+
         /** File for logging results */
         std::ofstream logFile_;
 

@@ -4,16 +4,16 @@ namespace ch
 {
 
 Quickhull2D::Quickhull2D()
-    :globOut_(NULL)
+    :globIn_(NULL), globOut_(NULL)
 {
     name_ = "Quickhull";
 }
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
 {
-    // return solveParallel(input, output);
+    return solveParallel(input, output);
     // return solveNaive(input, output);
-    return solveOptimal(input, output);
+    // return solveOptimal(input, output);
     // return solveIterative(input, output);
 }
 
@@ -67,44 +67,6 @@ Points2D& Quickhull2D::solveNaive(const Points2D& input, Points2D& output)
     return output;
 }
 
-void Quickhull2D::recParallel(point_t a, point_t b, data_t& plane,
-                              std::list<point_t>& onHull)
-{
-    if (plane.size() == 0) {
-        return;
-    }
-
-    // find point c farthest from ab
-    point_t c = planeFarthestDist(a, b, plane);
-
-    data_t acPlane, cbPlane;
-
-    for (auto& pt : plane) {
-        if (orientation(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 1) {
-            acPlane.push_back(pt);
-        } else if (orientation(c[0], c[1], b[0], b[1], pt[0], pt[1]) == 1) {
-            cbPlane.push_back(pt);
-        }
-    }
-    std::list<point_t> acList, cbList;
-
-    bool cond = (acPlane.size() > plane.size() / 10) && plane.size() > 1000;
-    /*
-    if (cond) {
-        R("split @" << acPlane.size())
-    }
-    */
-
-#pragma omp task shared(acPlane, acList) if (cond)
-        recParallel(a, c, acPlane, acList);
-    recParallel(c, b, cbPlane, cbList);
-#pragma omp taskwait
-
-    // O(1) append to onHull
-    onHull.splice(onHull.end(), acList);
-    onHull.push_back(c);
-    onHull.splice(onHull.end(), cbList);
-}
 
 void Quickhull2D::recSplit(point_t& a, point_t& b, point_t& c,
                            data_t& plane, bool upper)
@@ -269,57 +231,70 @@ Points2D& Quickhull2D::solveOptimal(const Points2D& input, Points2D& output)
     return output;
 }
 
-Points2D& Quickhull2D::solvePreprocessed(const Points2D& input,
-                                         Points2D& output)
+void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t& c,
+                              std::vector<unsigned> plane, unsigned planeSize,
+                              std::list<point_t>& onHull)
 {
-    if (input.getSize() <= 2) {
-        output = input;
-        return output;
+    if (planeSize == 0) {
+        return;
     }
 
-    globOut_ = &output;
-    const data_t& inputData = input.getData();
+    std::vector<unsigned> acPlane, cbPlane;
+    double acMax = -1, cbMax = -1;
+    unsigned acFar = 0, cbFar = 0;
 
-    // alt std::pair<point_t, point_t> pivots = minMaxX(inputData);
-    std::pair<point_t, point_t> pivots = farthestPoints(inputData);
-    point_t pivotLeft  = pivots.first,
-            pivotRight = pivots.second;
-
-    data_t topPlane, botPlane;
-    // future farthest points
-    double topMax = -1, botMax = -1;
-    point_t topFar, botFar;
-
-    // extended divide to planes
-    for (auto& pt : inputData) {
-        double o = cross(pivotLeft[0],  pivotLeft[1],
-                         pivotRight[0], pivotRight[1],
-                         pt[0],         pt[1]);
-        // double o = partCross(pt[0], pt[1], alpha, beta, gamma);
-        if (o > EPS) {
-            topPlane.push_back(pt);
-            if (fabs(o) > topMax) {
-                topFar = pt;
-                topMax = fabs(o);
+    for (unsigned i = 0; i < planeSize; i++) {
+        int pt = plane[i];
+        double aco = cross(a[0], a[1], c[0], c[1],
+                           (*globIn_)[pt][0], (*globIn_)[pt][1]);
+        if (aco > EPS) {
+            acPlane.push_back(pt);
+            double fac = fabs(aco);
+            if (fac > acMax) {
+                acFar = pt;
+                acMax = fac;
             }
-        } else if (o < -EPS) {
-            botPlane.push_back(pt);
-            if (fabs(o) > botMax) {
-                botFar = pt;
-                botMax = fabs(o);
+            continue;
+        }
+
+        double cbo = cross(c[0], c[1], b[0], b[1],
+                           (*globIn_)[pt][0], (*globIn_)[pt][1]);
+        if (cbo > EPS) {
+            cbPlane.push_back(pt);
+            double fcb = fabs(cbo);
+            if (fcb > cbMax) {
+                cbFar = pt;
+                cbMax = fcb;
             }
         }
     }
 
-    // recursive part
-    output.add(pivotLeft);
-    // recOptimal(pivotLeft, pivotRight, topFar, topPlane);
-    recSplit(pivotLeft, pivotRight, topFar, topPlane, true);
-    output.add(pivotRight);
-    // recOptimal(pivotRight, pivotLeft, botFar, botPlane);
-    recSplit(pivotRight, pivotLeft, botFar, botPlane, false);
+    std::list<point_t> acList, cbList;
 
-    return output;
+    if (acPlane.size() > parallelThreshold_ &&
+        cbPlane.size() > parallelThreshold_) {
+#pragma omp parallel
+        {
+#pragma omp sections
+            {
+#pragma omp section
+                recParallel(a, c, (*globIn_)[acFar], acPlane, acPlane.size(),
+                            acList);
+#pragma omp section
+                recParallel(c, b, (*globIn_)[cbFar], cbPlane, cbPlane.size(),
+                            cbList);
+            }
+        }
+    } else {
+        recParallel(a, c, (*globIn_)[acFar], acPlane, acPlane.size(), acList);
+        recParallel(c, b, (*globIn_)[cbFar], cbPlane, cbPlane.size(), cbList);
+    }
+
+
+    // O(1) append to onHull
+    onHull.splice(onHull.end(), acList);
+    onHull.push_back(c);
+    onHull.splice(onHull.end(), cbList);
 }
 
 Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
@@ -330,25 +305,64 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     }
 
     const data_t& inputData = input.getData();
+    globIn_ = &(input.getData());
+    parallelThreshold_ = 10000;
 
-    // alt std::pair<point_t, point_t> pivots = minMaxX(inputData);
-    std::pair<point_t, point_t> pivots = farthestPoints(inputData);
+    std::pair<point_t, point_t> pivots = minMaxX(inputData);
+    // std::pair<point_t, point_t> pivots = farthestPoints(inputData);
     point_t pivotLeft  = pivots.first,
             pivotRight = pivots.second;
 
-    data_t topPlane, botPlane;
-    divideToPlanes(inputData, pivotLeft, pivotRight, topPlane, botPlane);
 
     std::list<point_t> topList, botList;
+    std::vector<unsigned> topPlane, botPlane;
+    topPlane.resize(input.getSize());
+    botPlane.resize(input.getSize());
+    unsigned topPtr = 0, botPtr = 0;
+    // future farthest points
+    double topMax = -1, botMax = -1;
+    unsigned topFar = 0, botFar = 0;
+
+    // extended divide to planes
+    for (unsigned i = 0; i < inputData.size(); i++) {
+        double o = cross(pivotLeft[0],    pivotLeft[1],
+                         pivotRight[0],   pivotRight[1],
+                         inputData[i][0], inputData[i][1]);
+        double oa = fabs(o);
+        if (o > EPS) {
+            // topPlane.push_back(i);
+            topPlane[topPtr++] = i;
+            if (oa > topMax) {
+                topFar = i;
+                topMax = oa;
+            }
+        } else if (o < -EPS) {
+            // botPlane.push_back(i);
+            botPlane[botPtr++] = i;
+            if (oa > botMax) {
+                botFar = i;
+                botMax = oa;
+            }
+        }
+    }
+
+    /*
+    recParallel(pivotLeft, pivotRight, inputData[topFar], topPlane,
+                topPtr, topList);
+    recParallel(pivotRight, pivotLeft, inputData[botFar], botPlane,
+                botPtr, botList);
+                */
 
 #pragma omp parallel
     {
-#pragma omp single
+#pragma omp sections
         {
-#pragma omp task shared(topList, topPlane) if (topPlane.size() > input.getSize() / 3)
-                recParallel(pivotLeft, pivotRight, topPlane, topList);
-            recParallel(pivotRight, pivotLeft, botPlane, botList);
-#pragma omp taskwait
+#pragma omp section
+            recParallel(pivotLeft, pivotRight, inputData[topFar], topPlane,
+                        topPtr, topList);
+#pragma omp section
+            recParallel(pivotRight, pivotLeft, inputData[botFar], botPlane,
+                        botPtr, botList);
         }
     }
 

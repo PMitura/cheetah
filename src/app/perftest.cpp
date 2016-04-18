@@ -13,7 +13,7 @@ void PerfTest::runAllTests()
     // solvers.push_back(new JarvisScan2D());
 
     // setup parallelism
-    omp_set_num_threads(1);
+    omp_set_num_threads(4);
 
     // run tests
     // smallTests(solvers);
@@ -59,6 +59,7 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     instances.push_back({5000000, 1000,  1, 1000});
     instances.push_back({5000000, 5000,  1, 1000});
     instances.push_back({5000000, 10000, 1, 1000});
+    instances.push_back({5000000, 20000, 1, 1000});
 
     /*
     instances.push_back({1000000, 3,  1, 1000});
@@ -172,6 +173,11 @@ double PerfTest::runGeneratedTest(unsigned n, unsigned h, double span,
     Points2D input, output;
     generator.genUniformCircle(n, h, span, input);
 
+    // output generated test
+    // std::ofstream of("aside/compare2.in");
+    // printPoints(input, of);
+    // of.close();
+
     double timeStart = omp_get_wtime();
     solver.solve(input, output);
     double timeEnd   = omp_get_wtime();
@@ -204,7 +210,7 @@ void PerfTest::runApproxInstance(Instance& inst, Approximator2D& scheme)
     Points2D input, output;
     for (int i = 0; i < inst.runs; i++) {
         output.clear();
-        generator.genRandomCircle(inst.n, inst.h, inst.span, input);
+        generator.genUniformCircle(inst.n, inst.h, inst.span, input);
         double timeStart = omp_get_wtime();
         scheme.approximate(input, output);
         double timeEnd = omp_get_wtime();
@@ -223,6 +229,15 @@ void PerfTest::runApproxInstance(Instance& inst, Approximator2D& scheme)
     std::cout << "  actual percent: " << reached * 100 << "%"
               << std::endl;
     std::cout << "  total time " << totalTime << " ms" << std::endl;
+}
+
+void PerfTest::printPoints(Points2D& points, std::ofstream& output)
+{
+    output << points.getSize() << std::endl;
+    output << std::fixed << std::setprecision(20);
+    for (auto& pt : points.getData()) {
+        output << pt[0] << " " << pt[1] << std::endl;
+    }
 }
 
 }

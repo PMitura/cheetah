@@ -26,10 +26,11 @@ class Quickhull2D : public Solver2D
         void recOptimal(point_t& a, point_t& b, point_t& c, data_t& plane);
         void recSplit(point_t& a, point_t& b, point_t& c, data_t& plane,
                       bool upper);
-        Points2D& solveOptimal(const Points2D& input, Points2D& output);
-        Points2D& solvePreprocessed(const Points2D& input, Points2D& output);
 
-        void recParallel(point_t a, point_t b, data_t& plane,
+        Points2D& solveOptimal(const Points2D& input, Points2D& output);
+
+        void recParallel(const point_t& a, const point_t& b, const point_t& c, 
+                         std::vector<unsigned> plane, unsigned planeSize,
                          std::list<point_t>& onHull);
         Points2D& solveParallel(const Points2D& input, Points2D& output);
 
@@ -51,6 +52,8 @@ class Quickhull2D : public Solver2D
                                 point_t& pivotLeft, point_t& pivotRight,
                                 data_t& topPlane, data_t& botPlane);
 
+        unsigned int parallelThreshold_;
+        const data_t* globIn_;
         Points2D* globOut_;
 };
 
