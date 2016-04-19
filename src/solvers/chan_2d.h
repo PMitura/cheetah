@@ -18,9 +18,10 @@ class Chan2D : public Solver2D
         Points2D& solve(const Points2D& input, Points2D& output);
 
     private:
+        inline unsigned ppow(unsigned x) { return 1U << (1U << x); }
         Points2D& solveNaive(const Points2D& input, Points2D& output);
         void findHulls(const Points2D& input, std::vector<Points2D>& hulls,
-                       unsigned hullSize);
+                       unsigned step);
 
         /**
          * Finds point with minimal x coordinate, along with hull it lies on
@@ -29,7 +30,28 @@ class Chan2D : public Solver2D
          * @param minPt point with min x
          * @return index of hull min point lies on
          */
-        unsigned findMinHull(std::vector<Points2D&> hulls, point_t& minPt);
+        unsigned findMinHull(std::vector<Points2D>& hulls, unsigned& minPt);
+
+        /**
+         * Finds next point on overall hull
+         *
+         * @param hulls list of subhulls
+         * @param pt pair of point index and hull index of current point
+         * @return pair of point index and hull index
+         */
+        std::pair<unsigned, unsigned> findNext(std::vector<Points2D>& hulls,
+                std::pair<unsigned, unsigned> curr);
+
+        /**
+         * Finds point on hull touched by right tangent line from point p
+         *
+         * Complexity O(n log n) using binary search
+         *
+         * @param hull ordered convex subhull we are searching on
+         * @param p specified point of tangent line
+         * @return id of found point on its subhull
+         */
+        unsigned findTangent(const Points2D& hull, point_t p);
 };
 
 }

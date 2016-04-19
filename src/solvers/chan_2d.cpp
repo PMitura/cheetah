@@ -15,17 +15,28 @@ Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
 
 Points2D& Chan2D::solveNaive(const Points2D& input, Points2D& output)
 {
-    for (unsigned h = 1; (1U << (1U << h)) < input.getSize(); h++) {
+    // find hull size
+    for (unsigned h = 1; ppow(h) < input.getSize(); h++) {
         std::vector<Points2D> hulls;
-        findHulls(input, hulls, (1U << (1U << h)));
+        findHulls(input, hulls, ppow(h));
+
+        unsigned pivot,
+                 minHull = findMinHull(hulls, pivot),
+                 candidate = (pivot + 1) % hulls[minHull].getSize();
+        point_t ppt = hulls[minHull].getData()[pivot],
+                cpt = hulls[minHull].getData()[candidate];
+        std::vector<std::pair<unsigned, unsigned>> overallHull;
+        // iterate at most h times (guessed number of hull points)
+        for (unsigned i = 0; i < hulls.size(); i++) {
+            findNext
+        }
     }
     return output;
 }
 
 void Chan2D::findHulls(const Points2D& input, std::vector<Points2D>& hulls,
-                       unsigned hullSize)
+                       unsigned step)
 {
-    unsigned step = input.getSize() / hullSize;
     const data_t& inputData = input.getData();
     for (unsigned i = 0; i < input.getSize(); i += step) {
         Points2D part;
@@ -38,21 +49,32 @@ void Chan2D::findHulls(const Points2D& input, std::vector<Points2D>& hulls,
     }
 }
 
-unsigned findMinHull(std::vector<Points2D>& hulls, point_t& minPt)
+std::pair<unsigned, unsigned> Chan2D::findNext(std::vector<Points2D>& hulls,
+        std::pair<unsigned, unsigned> curr)
+{
+    
+}
+
+unsigned Chan2D::findMinHull(std::vector<Points2D>& hulls, unsigned& minPt)
 {
     unsigned lies = 0;
     double minX = DBL_MIN;
     for (unsigned h = 0; h < hulls.size(); h++) {
         const data_t& hull = hulls[h].getData();
-        for (auto& pt : hull) {
-            if (pt[0] < minX) {
-                minX = pt[0];
-                minPt = pt;
+        for (unsigned i = 0; i < hull.size(); i++) {
+            if (hull[i][0] < minX) {
+                minX = hull[i][0];
+                minPt = i;
                 lies = h;
             }
         }
     }
     return lies;
+}
+
+unsigned Chan2D::findTangent(const Points2D& hull, point_t p)
+{
+    return 0;
 }
 
 }
