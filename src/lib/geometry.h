@@ -33,6 +33,10 @@ inline double dist(double ax, double ay, double bx, double by)
 {
     return hypot(ax - bx, ay - by);
 }
+inline double dist(point_t& a, point_t& b)
+{
+    return hypot(a[0] - b[0], a[1] - b[1]);
+}
 inline double dist(point2d_t a, point2d_t b)
 {
     return hypot(a.first - b.first, a.second - b.second);
@@ -98,8 +102,8 @@ inline int orientation(const double& ax, const double& ay,
 {
     double cross = (ax - bx) * (by - cy) - (ay - by) * (bx - cx);
 
-    if (fabs(cross) < EPS) return 0;  // colinear
-    return (cross > EPS) ? 1 : 2; // clockwise or counter clockwise
+    if (fabs(cross) < EPS) return 0;  // collinear
+    return (cross > EPS) ? 1 : 2; // counter-clockwise or clockwise
 }
 
 /** finds out on which side does the point lie */

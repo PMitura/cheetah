@@ -20,15 +20,16 @@ Points2D& Chan2D::solveNaive(const Points2D& input, Points2D& output)
         std::vector<Points2D> hulls;
         findHulls(input, hulls, ppow(h));
 
-        unsigned pivot,
-                 minHull = findMinHull(hulls, pivot),
-                 candidate = (pivot + 1) % hulls[minHull].getSize();
-        point_t ppt = hulls[minHull].getData()[pivot],
-                cpt = hulls[minHull].getData()[candidate];
+        unsigned pivot = 0,
+                 minHull = findMinHull(hulls, pivot);
         std::vector<std::pair<unsigned, unsigned>> overallHull;
+        std::pair<unsigned, unsigned> curr = {pivot, minHull};
+        overallHull.push_back(curr);
+
         // iterate at most h times (guessed number of hull points)
         for (unsigned i = 0; i < hulls.size(); i++) {
-            findNext
+            curr = findNext(hulls, curr);
+
         }
     }
     return output;
@@ -50,9 +51,40 @@ void Chan2D::findHulls(const Points2D& input, std::vector<Points2D>& hulls,
 }
 
 std::pair<unsigned, unsigned> Chan2D::findNext(std::vector<Points2D>& hulls,
-        std::pair<unsigned, unsigned> curr)
+        std::pair<unsigned, unsigned>& curr)
 {
-    
+    std::pair<unsigned, unsigned> cand;
+    cand.first = (curr.first + 1) % (hulls[curr.second].getSize());
+    cand.second = curr.second;
+    point_t currP = hulls[curr.second].getData()[curr.first],
+            candP = hulls[cand.second].getData()[cand.first],
+            propP;
+
+    for (unsigned sub = 0; sub < hulls.size(); sub++) {
+        if (sub == curr.second) {
+            continue;
+        }
+
+        unsigned tgt = findTangent(hulls[sub], currP);
+        propP = hulls[sub].getData()[tgt];
+        int o = orientation(currP[0], currP[1],
+                            candP[0], candP[1],
+                            propP[0], propP[1]);
+
+        if (o == 2) {
+            // right turn
+            cand = {tgt, sub};
+            candP = propP;
+        } else if (o == 0) {
+            // collinear
+            if (dist(currP, candP) < dist(currP, propP)) {
+                cand = {tgt, sub};
+                candP = propP;
+            }
+        }
+    }
+
+    return cand;
 }
 
 unsigned Chan2D::findMinHull(std::vector<Points2D>& hulls, unsigned& minPt)
@@ -72,7 +104,7 @@ unsigned Chan2D::findMinHull(std::vector<Points2D>& hulls, unsigned& minPt)
     return lies;
 }
 
-unsigned Chan2D::findTangent(const Points2D& hull, point_t p)
+unsigned Chan2D::findTangent(const Points2D& hull, point_t& p)
 {
     return 0;
 }

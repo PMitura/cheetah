@@ -40,10 +40,10 @@ class Chan2D : public Solver2D
          * @return pair of point index and hull index
          */
         std::pair<unsigned, unsigned> findNext(std::vector<Points2D>& hulls,
-                std::pair<unsigned, unsigned> curr);
+                std::pair<unsigned, unsigned>& curr);
 
         /**
-         * Finds point on hull touched by right tangent line from point p
+         * Finds point on hull touched by left tangent line from point p
          *
          * Complexity O(n log n) using binary search
          *
@@ -51,7 +51,7 @@ class Chan2D : public Solver2D
          * @param p specified point of tangent line
          * @return id of found point on its subhull
          */
-        unsigned findTangent(const Points2D& hull, point_t p);
+        unsigned findTangent(const Points2D& hull, point_t& p);
 };
 
 }
