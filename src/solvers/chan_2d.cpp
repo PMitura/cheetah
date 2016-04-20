@@ -20,7 +20,7 @@ Points2D& Chan2D::solveNaive(const Points2D& input, Points2D& output)
         return output;
     }
 
-    // find hull size
+    // find hull size, stop one step after input size
     for (unsigned h = 1; ppow(h-1) < input.getSize(); h++) {
         std::vector<Points2D> hulls;
         findHulls(input, hulls, ppow(h));

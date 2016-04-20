@@ -16,6 +16,7 @@
 #include "solvers/graham_scan_2d.h"
 #include "solvers/monotone_chain_2d.h"
 #include "solvers/quickhull_2d.h"
+#include "solvers/chan_2d.h"
 
 namespace ch
 {
