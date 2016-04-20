@@ -33,7 +33,7 @@ inline double dist(double ax, double ay, double bx, double by)
 {
     return hypot(ax - bx, ay - by);
 }
-inline double dist(point_t& a, point_t& b)
+inline double dist(point_t& a, const point_t& b)
 {
     return hypot(a[0] - b[0], a[1] - b[1]);
 }
