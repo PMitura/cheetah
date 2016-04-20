@@ -127,4 +127,26 @@ bool ptInTriangle(double ax, double ay,
                   double cx, double cy,
                   double px, double py);
 
+/** finds out if point is in given ccw ordered polygon */
+inline bool ptInPolygon(const data_t& poly, const point_t& point)
+{
+    unsigned s = poly.size();
+    if (s <= 2) {
+        return 0;
+    }
+    for (int i = 0; i < poly.size() - 2; i++) {
+        if (!ccw(poly[i], poly[i+1], poly[i+2])) {
+            return 0;
+        }
+    }
+    if (!ccw(poly[s-2], poly[s-1], poly[0])) {
+        return 0;
+    }
+    if (!ccw(poly[s-1], poly[0], poly[1])) {
+        return 0;
+    }
+    return 1;
 }
+
+}
+
