@@ -15,6 +15,11 @@ Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
 
 Points2D& Chan2D::solveNaive(const Points2D& input, Points2D& output)
 {
+    if (input.getSize() <= 2) {
+        output = input;
+        return output;
+    }
+
     // find hull size
     for (unsigned h = 1; ppow(h) < input.getSize(); h++) {
         std::vector<Points2D> hulls;
@@ -27,9 +32,20 @@ Points2D& Chan2D::solveNaive(const Points2D& input, Points2D& output)
         overallHull.push_back(curr);
 
         // iterate at most h times (guessed number of hull points)
+        bool fnd = 0;
         for (unsigned i = 0; i < hulls.size(); i++) {
             curr = findNext(hulls, curr);
-
+            if (curr == overallHull[0]) {
+                fnd = 1;
+                break;
+            }
+            overallHull.push_back(curr);
+        }
+        if (fnd) {
+            for (auto& i : overallHull) {
+                output.add(hulls[i.second].getData()[i.first]);
+            }
+            return output;
         }
     }
     return output;
@@ -106,7 +122,54 @@ unsigned Chan2D::findMinHull(std::vector<Points2D>& hulls, unsigned& minPt)
 
 unsigned Chan2D::findTangent(const Points2D& hull, point_t& p)
 {
-    return 0;
+    const data_t& hdata = hull.getData();
+    if (hdata.size() == 1) {
+        return 0;
+    }
+
+    int left = 0, right = hdata.size(), mid, s = hdata.size();
+    int olFrnt = orientation(p[0],            p[1],
+                             hdata[0][0],     hdata[0][1],
+                             hdata[1][0], hdata[1][1]),
+        olBack = orientation(p[0],            p[1],
+                             hdata[0][0],     hdata[0][1],
+                             hdata[s - 1][0], hdata[s - 1][1]);
+
+    while (left < right) {
+        mid = (left + right) / 2;
+        int dm = (mid == 0) ? s - 1 : 0;
+
+        int omFrnt = orientation(p[0],                  p[1],
+                                 hdata[mid][0],         hdata[mid][1],
+                                 hdata[(mid+1) % s][0], hdata[(mid+1) % s][1]);
+        int omBack = orientation(p[0],          p[1],
+                                 hdata[mid][0], hdata[mid][1],
+                                 hdata[dm][0],  hdata[dm][1]);
+        int omSelf = orientation(p[0],           p[1],
+                                 hdata[left][0], hdata[left][1],
+                                 hdata[mid][0],  hdata[mid][1]);
+
+        if (omBack != 2 && omFrnt != 2) {
+            return mid;
+        }
+
+        if (   (omSelf == 2 && omBack == 2)
+            || (omSelf == 1 && (olFrnt == 2 || olBack == olFrnt))) {
+            right = left;
+        } else {
+            left = right + 1;
+            olBack = omFrnt;
+            if (omFrnt == 1) {
+                olBack = 2;
+            } else if (omFrnt == 2) {
+                olBack = 1;
+            }
+            olFrnt = orientation(p[0], p[1],
+                hdata[left][0], hdata[left][1],
+                hdata[(left+1) % s][0], hdata[(left+1) % s][1]);
+        }
+    }
+    return 1;
 }
 
 }

@@ -10,6 +10,7 @@
 #include "solvers/graham_scan_2d.h"
 #include "solvers/monotone_chain_2d.h"
 #include "solvers/quickhull_2d.h"
+#include "solvers/chan_2d.h"
 
 void printHull2D(ch::Points2D& points, std::ostream& out)
 {
@@ -151,6 +152,17 @@ TEST(QuickHull2DTest, Generated)
     testSolverGen2D(quickhull);
 }
 
+TEST(Chan2DTest, Premade)
+{
+    ch::Chan2D chan;
+    testSolverPremade2D(chan);
+}
+
+TEST(Chan2DTest, Generated)
+{
+    ch::Chan2D chan;
+    testSolverGen2D(chan);
+}
 /*
 TEST(PrintHull, EraseMe)
 {
