@@ -243,10 +243,29 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
     double acMax = -1, cbMax = -1;
     unsigned acFar = 0, cbFar = 0;
 
+    
+    /*
+    // precompute angle
+    double alphaAC = a[1] - c[1],
+           betaAC  = a[0] - c[0],
+           gammaAC = betaAC*c[1] - alphaAC*c[0],
+           alphaCB = c[1] - b[1],
+           betaCB  = c[0] - b[0],
+           gammaCB = betaCB*b[1] - alphaCB*b[0];
+    double * acPre = new double[plane.size()],
+           * cbPre = new double[plane.size()];
+    for (unsigned i = 0; i < planeSize; i++) {
+        acPre[i] = partCross((*globIn_)[pt][0], (*globIn_)[pt][1],
+                             alphaAC, betaAC, gammaAC);
+        cbPre[i] = partCross((*globIn_)[pt][0], (*globIn_)[pt][1],
+                             alphaCB, betaCB, gammaCB);
+    }
+    */
+
     for (unsigned i = 0; i < planeSize; i++) {
         int pt = plane[i];
         double aco = cross(a[0], a[1], c[0], c[1],
-                           (*globIn_)[pt][0], (*globIn_)[pt][1]);
+                        (*globIn_)[pt][0], (*globIn_)[pt][1]);
         if (aco > EPS) {
             acPlane.push_back(pt);
             double fac = fabs(aco);
@@ -258,7 +277,7 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
         }
 
         double cbo = cross(c[0], c[1], b[0], b[1],
-                           (*globIn_)[pt][0], (*globIn_)[pt][1]);
+                        (*globIn_)[pt][0], (*globIn_)[pt][1]);
         if (cbo > EPS) {
             cbPlane.push_back(pt);
             double fcb = fabs(cbo);
@@ -268,6 +287,9 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
             }
         }
     }
+
+    // delete[] acPre;
+    // delete[] cbPre;
 
     std::list<point_t> acList, cbList;
 
@@ -306,7 +328,7 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
 
     const data_t& inputData = input.getData();
     globIn_ = &(input.getData());
-    parallelThreshold_ = 10000;
+    parallelThreshold_ = 100000000;
 
     std::pair<point_t, point_t> pivots = minMaxX(inputData);
     // std::pair<point_t, point_t> pivots = farthestPoints(inputData);
@@ -323,21 +345,30 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     double topMax = -1, botMax = -1;
     unsigned topFar = 0, botFar = 0;
 
+    /*
+    // precompute cross product
+    double alpha = pivotLeft[1] - pivotRight[1],
+           beta  = pivotLeft[0] - pivotRight[0],
+           gamma = beta*pivotRight[1] - alpha*pivotRight[0];
+    // precomputed cross has lower precision
+    double oldEPS = EPS;
+    EPS = 1e-6; 
+    */
+
     // extended divide to planes
     for (unsigned i = 0; i < inputData.size(); i++) {
+        // double o = partCross(inputData[i][0], inputData[i][1],
         double o = cross(pivotLeft[0],    pivotLeft[1],
                          pivotRight[0],   pivotRight[1],
                          inputData[i][0], inputData[i][1]);
         double oa = fabs(o);
         if (o > EPS) {
-            // topPlane.push_back(i);
             topPlane[topPtr++] = i;
             if (oa > topMax) {
                 topFar = i;
                 topMax = oa;
             }
         } else if (o < -EPS) {
-            // botPlane.push_back(i);
             botPlane[botPtr++] = i;
             if (oa > botMax) {
                 botFar = i;
@@ -374,6 +405,8 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     for (auto pt : botList) {
         output.add(pt);
     }
+
+    // EPS = oldEPS; // return EPS back to previous state
 
     return output;
 }
