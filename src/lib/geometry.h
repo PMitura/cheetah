@@ -134,15 +134,15 @@ inline bool ptInPolygon(const data_t& poly, const point_t& point)
     if (s <= 2) {
         return 0;
     }
-    for (int i = 0; i < poly.size() - 2; i++) {
-        if (!ccw(poly[i], poly[i+1], poly[i+2])) {
+    for (unsigned i = 0; i < poly.size() - 2; i++) {
+        if (!ccw(poly[i], poly[i+1], point)) {
             return 0;
         }
     }
-    if (!ccw(poly[s-2], poly[s-1], poly[0])) {
+    if (!ccw(poly[s-2], poly[s-1], point)) {
         return 0;
     }
-    if (!ccw(poly[s-1], poly[0], poly[1])) {
+    if (!ccw(poly[s-1], poly[0], point)) {
         return 0;
     }
     return 1;
