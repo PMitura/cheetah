@@ -27,6 +27,11 @@ inline double dot(point2d_t a, point2d_t b)
 {
     return a.first * b.first + a.second * b.second;
 }
+inline double dot(double ax, double ay, double az,
+                  double bx, double by, double bz)
+{
+    return ax*bx + ay*by + az*bz;
+}
 
 /** computes distance of points a and b */
 inline double dist(double ax, double ay, double bx, double by)

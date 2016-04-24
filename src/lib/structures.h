@@ -55,13 +55,27 @@ class PointsND
         unsigned int dimension_;
 };
 
-/**
- *
- */
 class Points2D : public PointsND
 {
     public:
         Points2D();
 };
+
+class Points3D : public PointsND
+{
+    public:
+        Points3D();
+};
+
+class Polyhedron
+{
+    public:
+        inline void addFace(Points2D& face) { faces_.push_back(face); }
+        inline const std::vector<Points2D>& getFaces() { return faces_; }
+
+    private:
+        std::vector<Points2D> faces_;
+};
+
 
 }

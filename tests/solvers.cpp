@@ -11,6 +11,7 @@
 #include "solvers/monotone_chain_2d.h"
 #include "solvers/quickhull_2d.h"
 #include "solvers/chan_2d.h"
+#include "solvers/jarvis_scan_3d.h"
 
 void printHull2D(ch::Points2D& points, std::ostream& out)
 {
@@ -174,3 +175,39 @@ TEST(PrintHull, EraseMe)
     printHull2D(points, of);
 }
 */
+
+bool readFile3D(const std::string& filename, ch::Points3D& points)
+{
+    std::ifstream file(filename);
+    if (!file.is_open())
+        return false;
+    long long int n;
+    file >> n;
+    points.clear();
+    for (int i = 0; i < n; i++) {
+        double a, b, c;
+        file >> a >> b >> c;
+        points.add({a, b, c});
+    }
+    return true;
+}
+
+void testSingleFile3D(const std::string& filename, ch::Solver3D& solver)
+{
+    ch::Points3D input;
+    ch::Polyhedron output;
+    ASSERT_TRUE(readFile3D(filename, input));
+    solver.solve(input, output);
+}
+
+void testSolverPremade3D(ch::Solver3D& solver)
+{
+    // regular tetrahedron, four triangle faces, one point inside
+    testSingleFile3D("tests/files/3d_tetrahedron.in", solver);
+}
+
+TEST(Jarvis3DTest, Premade)
+{
+    ch::JarvisScan3D jarvis;
+    testSolverPremade3D(jarvis);
+}

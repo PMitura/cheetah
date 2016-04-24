@@ -18,4 +18,8 @@ Points2D::Points2D()
     : PointsND(2)
 {}
 
+Points3D::Points3D()
+    : PointsND(3)
+{}
+
 }
