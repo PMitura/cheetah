@@ -204,6 +204,9 @@ void testSolverPremade3D(ch::Solver3D& solver)
 {
     // regular tetrahedron, four triangle faces, one point inside
     testSingleFile3D("tests/files/3d_tetrahedron.in", solver);
+
+    // regular cube, six square faces, regular tetrahedron inside
+    testSingleFile3D("tests/files/3d_cube.in", solver);
 }
 
 TEST(Jarvis3DTest, Premade)

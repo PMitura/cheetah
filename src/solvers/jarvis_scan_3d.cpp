@@ -29,11 +29,15 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
     const data_t& inputData = input.getData();
     std::pair<unsigned, unsigned> init = findInitial(inputData);
     R(init.first << ", " << init.second);
-
     return output;
 }
 
-std::pair<unsigned, unsigned> findInitial(const data_t& input)
+double JarvisScan3D::randomOne()
+{
+    return (rand() % 2) ? -1 : 1;
+}
+
+std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
 {
     srand(time(NULL));
     int rndx, rndy, rndz;
@@ -45,7 +49,8 @@ std::pair<unsigned, unsigned> findInitial(const data_t& input)
         far = 0;
         farcnt = 1;
         maxd = DBL_MIN;
-        rndx = rand(); rndy = rand(); rndz = rand();
+        rndx = randomOne(); rndy = randomOne(); rndz = randomOne();
+        R(rndx << ", " << rndy << ", " << rndz);
         for (unsigned i = 0; i < input.size(); i++) {
             double d = dot(input[i][0], input[i][1], input[i][2], 
                            rndx,        rndy,        rndz);
@@ -61,10 +66,30 @@ std::pair<unsigned, unsigned> findInitial(const data_t& input)
     } while (farcnt > 3);
 
     unsigned paired = 0;
-    maxd = DBL_MIN;
+    maxd = DBL_MAX;
+    double minLen = DBL_MAX;
     for (unsigned i = 0; i < input.size(); i++) {
         if (i == far) {
             continue;
+        }
+        point_t vFarI = {input[far][0] - input[i][0],
+                         input[far][1] - input[i][1],
+                         input[far][2] - input[i][2]};
+        double iLen = sqrt(vFarI[0]*vFarI[0] + vFarI[1]*vFarI[1]
+                           + vFarI[2]*vFarI[2]);
+        double d = dot(vFarI[0], vFarI[1], vFarI[2], 
+                       rndx,     rndy,     rndz);
+        d /= iLen;
+        double dif = d - maxd;
+        if (dif < -EPS) {
+            paired = i;
+            maxd = d;
+            minLen = iLen;
+        } else if (fabs(dif) < EPS) {
+            if (iLen < minLen - EPS) {
+                paired = i;
+                minLen = iLen;
+            }
         }
     }
 

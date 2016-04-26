@@ -28,7 +28,8 @@ class JarvisScan3D : public Solver3D
 
     private:
         Polyhedron& solveNaive(const Points3D& input, Polyhedron& output);
-
+        /** Returns 1 or -1 at random */
+        double randomOne();
         std::pair<unsigned, unsigned> findInitial(const data_t& input);
 };
 

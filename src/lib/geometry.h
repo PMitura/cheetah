@@ -8,7 +8,7 @@
 namespace ch
 {
 
-double EPS = 1e-12;
+const double EPS = 1e-12;
 const double PI  = 3.141592653589793238462643383279;
 
 /** computes angle of line segment ab and x axis */
@@ -37,6 +37,13 @@ inline double dot(double ax, double ay, double az,
 inline double dist(double ax, double ay, double bx, double by)
 {
     return hypot(ax - bx, ay - by);
+}
+inline double dist(double ax, double ay, double az,
+                   double bx, double by, double bz)
+{
+    // 3d ver.
+    return sqrt((ax - bx)*(ax - bx) + (ay - by)*(ay - by)
+        + (az - bz)*(az - bz));
 }
 inline double dist(point_t& a, const point_t& b)
 {
