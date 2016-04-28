@@ -26,19 +26,18 @@ Polyhedron& JarvisScan3D::solve(const Points3D& input, Polyhedron& output)
 
 Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
 {
-    Polyhedron result;
     const data_t& idata = input.getData();
     std::pair<unsigned, unsigned> init = findInitial(idata);
     if (init.first >= init.second) {
         std::swap(init.first, init.second);
     }
     // unprocessed edges
-    std::vector<std::pair<unsigned, unsigned>> edges;
-    edges.push_back(init);
+    std::set<std::pair<unsigned, unsigned>> edges;
+    edges.insert(init);
 
     while (!edges.empty()) {
         // points a, b
-        std::pair<unsigned, unsigned> curr = edges.back();
+        std::pair<unsigned, unsigned> curr = *(edges.begin());
         point_t vab = {idata[curr.first][0] - idata[curr.second][0],
                        idata[curr.first][1] - idata[curr.second][1],
                        idata[curr.first][2] - idata[curr.second][2]};
@@ -68,19 +67,48 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
             return output;
         }
 
-        unsigned prevC = c, currC = c;
+        unsigned prevC, currC = c, itN = 0;
+        std::vector<unsigned> onPlane;
         // find such c, that all points are on one side of plane abc
-        for (unsigned i = 0; i < idata.size(); i++) {
-            // cannot reuse a, b, c
-            if (i == curr.first || i == curr.second || i == c) {
-                continue;
+        do {
+
+            // find new c
+            double dDist, maxDist;
+            onPlane.clear();
+            prevC = currC;
+            for (unsigned i = 0; i < idata.size(); i++) {
+                // cannot reuse a, b, c
+                if (i == curr.first || i == curr.second || i == c) {
+                    continue;
+                }
+
+                // compute directional distance
+                dDist = dot(idata[i][0] - idata[curr.second][0],
+                            idata[i][1] - idata[curr.second][1],
+                            idata[i][2] - idata[curr.second][2],
+                            vperp[0], vperp[1], vperp[2]);
+                if (dDist > maxDist) {
+                    currC = i;
+                    maxDist = dDist;
+                } else if (fabs(dDist) < EPS) {
+                    // on the same plane as abc
+                    onPlane.push_back(i);
+                }
             }
 
-
-            if (prevC == currC) {
-                break;
+            // detect infinite loop
+            if (itN++ >= idata.size()) {
+                // this happening means wrong choice of ab
+                // report occurencies of this call as a bug
+                return output;
             }
-        }
+
+            vcb = {idata[c][0] - idata[curr.second][0],
+                   idata[c][1] - idata[curr.second][1],
+                   idata[c][2] - idata[curr.second][2]};
+            // find new perpendicular vector
+            vperp = perpend3d(vab, vcb);
+        } while (prevC != currC); // c not changed => all points on one side
     }
 
     return output;
@@ -134,6 +162,7 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
                          input[far][2] - input[i][2]};
         double iLen = sqrt(vFarI[0]*vFarI[0] + vFarI[1]*vFarI[1]
                            + vFarI[2]*vFarI[2]);
+        // directional distance
         double d = dot(vFarI[0], vFarI[1], vFarI[2], 
                        rndx,     rndy,     rndz);
         d /= iLen;
