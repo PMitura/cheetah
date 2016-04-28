@@ -26,9 +26,63 @@ Polyhedron& JarvisScan3D::solve(const Points3D& input, Polyhedron& output)
 
 Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
 {
-    const data_t& inputData = input.getData();
-    std::pair<unsigned, unsigned> init = findInitial(inputData);
-    R(init.first << ", " << init.second);
+    Polyhedron result;
+    const data_t& idata = input.getData();
+    std::pair<unsigned, unsigned> init = findInitial(idata);
+    if (init.first >= init.second) {
+        std::swap(init.first, init.second);
+    }
+    // unprocessed edges
+    std::vector<std::pair<unsigned, unsigned>> edges;
+    edges.push_back(init);
+
+    while (!edges.empty()) {
+        // points a, b
+        std::pair<unsigned, unsigned> curr = edges.back();
+        point_t vab = {idata[curr.first][0] - idata[curr.second][0],
+                       idata[curr.first][1] - idata[curr.second][1],
+                       idata[curr.first][2] - idata[curr.second][2]};
+
+        point_t vcb, vperp;
+        unsigned c = -1;
+        // find some non-collinear c
+        for (unsigned i = 0; i < idata.size(); i++) {
+            // cannot reuse a, b
+            if (i == curr.first || i == curr.second) {
+                continue;
+            }
+            vcb = {idata[i][0] - idata[curr.second][0],
+                   idata[i][1] - idata[curr.second][1],
+                   idata[i][2] - idata[curr.second][2]};
+            // find vector perpendicular to abc
+            vperp = perpend3d(vab, vcb);
+            // if c not collinear, use it
+            if (!zeroVect(vperp)) {
+                c = i;
+                break;
+            }
+        }
+
+        // all input points on one line
+        if (c == -1) {
+            return output;
+        }
+
+        unsigned prevC = c, currC = c;
+        // find such c, that all points are on one side of plane abc
+        for (unsigned i = 0; i < idata.size(); i++) {
+            // cannot reuse a, b, c
+            if (i == curr.first || i == curr.second || i == c) {
+                continue;
+            }
+
+
+            if (prevC == currC) {
+                break;
+            }
+        }
+    }
+
     return output;
 }
 
@@ -44,13 +98,14 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
     double maxd;
     unsigned far, farcnt;
 
+    // find farthest point in some direction
     do {
-        // random direction vector
         far = 0;
         farcnt = 1;
         maxd = DBL_MIN;
+        // random direction vector
         rndx = randomOne(); rndy = randomOne(); rndz = randomOne();
-        R(rndx << ", " << rndy << ", " << rndz);
+        // R(rndx << ", " << rndy << ", " << rndz);
         for (unsigned i = 0; i < input.size(); i++) {
             double d = dot(input[i][0], input[i][1], input[i][2], 
                            rndx,        rndy,        rndz);
@@ -68,6 +123,8 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
     unsigned paired = 0;
     maxd = DBL_MAX;
     double minLen = DBL_MAX;
+    // find second point on edge = point with smallest angle to plane
+    // perpendicular to rng vector from previous step
     for (unsigned i = 0; i < input.size(); i++) {
         if (i == far) {
             continue;
