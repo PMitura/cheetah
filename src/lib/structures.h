@@ -70,11 +70,13 @@ class Points3D : public PointsND
 class Polyhedron
 {
     public:
-        inline void addFace(Points2D& face) { faces_.push_back(face); }
-        inline const std::vector<Points2D>& getFaces() { return faces_; }
+        inline void addFace(Points3D& face) { faces_.push_back(face); }
+        inline void popFace() { faces_.pop_back(); }
+        inline const std::vector<Points3D>& getFaces() { return faces_; }
+        inline unsigned getSize() { return faces_.size(); }
 
     private:
-        std::vector<Points2D> faces_;
+        std::vector<Points3D> faces_;
 };
 
 

@@ -194,8 +194,9 @@ bool readFile3D(const std::string& filename, ch::Points3D& points)
 
 void printFaces3D(ch::Polyhedron& poly)
 {
+    int ctr = 1;
     for (auto& face : poly.getFaces()) {
-        R("Face:")
+        R("Face " << ctr++)
         for (auto& pt : face.getData()) {
             R("  " << pt[0] << ", " << pt[1] << ", " << pt[2]);
         }
@@ -213,11 +214,23 @@ void testSingleFile3D(const std::string& filename, ch::Solver3D& solver)
 
 void testSolverPremade3D(ch::Solver3D& solver)
 {
-    // regular tetrahedron, four triangle faces, one point inside
+    // reg. tetrahedron, four triangle faces, one point inside
     testSingleFile3D("tests/files/3d_tetrahedron.in", solver);
 
-    // regular cube, six square faces, regular tetrahedron inside
+    // reg. cube, six square faces, reg. tetrahedron inside, 2 pts on sides
     testSingleFile3D("tests/files/3d_cube.in", solver);
+
+    // reg. octahedron, eight triangle faces, embedded tetrahedron
+    testSingleFile3D("tests/files/3d_octahedron.in", solver);
+
+    // reg. dodecahedron, twelve pentagonal faces
+    testSingleFile3D("tests/files/3d_dodecahedron.in", solver);
+
+    // reg. isocahedron, twenty triangle faces
+    testSingleFile3D("tests/files/3d_isocahedron.in", solver);
+
+    // 5 points on plane
+    testSingleFile3D("tests/files/3d_plane.in", solver);
 }
 
 TEST(Jarvis3DTest, Premade)

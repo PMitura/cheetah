@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <cfloat>
+#include <climits>
 
 #include "lib/geometry.h"
 #include "lib/structures.h"
@@ -20,6 +21,9 @@ namespace ch
 class JarvisScan3D : public Solver3D
 {
     public:
+        /** Constructor, set up epsilon */
+        JarvisScan3D();
+
         /**
          * Find convex hull of input data set.
          *
@@ -33,6 +37,9 @@ class JarvisScan3D : public Solver3D
         /** Returns 1 or -1 at random */
         double randomOne();
         std::pair<unsigned, unsigned> findInitial(const data_t& input);
+
+        /** epsilon local for this solver */
+        double EPS_LOC;
 };
 
 }

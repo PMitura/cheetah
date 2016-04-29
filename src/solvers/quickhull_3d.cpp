@@ -9,7 +9,7 @@ Polyhedron& Quickhull3D::solve(const Points3D& input, Polyhedron& output)
     if (input.getSize() == 0) {
         return output;
     } else if (input.getSize() < 3) {
-        Points2D plane;
+        Points3D plane;
         const data_t& inputData = input.getData();
         for (auto& i : inputData) {
             plane.add(i);

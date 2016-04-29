@@ -3,13 +3,20 @@
 namespace ch
 {
 
+JarvisScan3D::JarvisScan3D()
+{
+    // fixed value is the lesser evil here, relative epsilon causes all sorts
+    // of weird behavior
+    EPS_LOC = 1e-6;
+}
+
 Polyhedron& JarvisScan3D::solve(const Points3D& input, Polyhedron& output)
 {
     // edge cases
     if (input.getSize() == 0) {
         return output;
     } else if (input.getSize() < 3) {
-        Points2D plane;
+        Points3D plane;
         const data_t& inputData = input.getData();
         for (auto& i : inputData) {
             plane.add(i);
@@ -28,25 +35,30 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
     const data_t& idata = input.getData();
     typedef std::pair<unsigned, unsigned> edge_t;
     edge_t init = findInitial(idata);
-    // unprocessed edges
-    std::set<edge_t> edges;
+    // discovered and processed edges
+    std::set<edge_t> fresh, closed;
 
     do {
         // points a, b
-        edge_t curr = *(edges.begin());
+        edge_t curr = {init.first, init.second};
+        if (fresh.size() > 0) {
+            curr = *(fresh.begin());
+        }
         point_t vab = {idata[curr.first][0] - idata[curr.second][0],
                        idata[curr.first][1] - idata[curr.second][1],
                        idata[curr.first][2] - idata[curr.second][2]};
 
+        R(" ");
         R("OVER EDGE: " << idata[curr.first][0] << ", " <<
                            idata[curr.first][1] << ", " <<
                            idata[curr.first][2] << " | " <<
                            idata[curr.second][0] << ", " <<
                            idata[curr.second][1] << ", " <<
-                           idata[curr.second][2]);
+                           idata[curr.second][2] << 
+                           " (id: " << curr.first << ", " << curr.second << ")");
 
         point_t vcb, vperp;
-        int c = -1;
+        unsigned c = UINT_MAX;
         // find some non-collinear c
         for (unsigned i = 0; i < idata.size(); i++) {
             // cannot reuse a, b
@@ -66,9 +78,11 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
         }
 
         // all input points on one line
-        if (c == -1) {
+        if (c == UINT_MAX) {
+            R("collinear set");
             return output;
         }
+
 
         unsigned prevC, currC = c, itN = 0;
         std::vector<unsigned> onPlane;
@@ -77,13 +91,16 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
             // update perpendicular vector
             vperp = perpendNormal3d(vab, vcb);
             // find new c
-            double dDist, maxDist = 0.0;
+            double dDist, maxDist = 0;
             onPlane.clear();
             onPlane.push_back(currC);
             prevC = currC;
+            R("TRY C: " << idata[currC][0] << ", " <<
+                           idata[currC][1] << ", " <<
+                           idata[currC][2]);
             for (unsigned i = 0; i < idata.size(); i++) {
                 // cannot reuse a, b, c
-                if (i == curr.first || i == curr.second || i == c) {
+                if (i == curr.first || i == curr.second || i == currC) {
                     continue;
                 }
 
@@ -92,10 +109,11 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
                             idata[i][1] - idata[curr.second][1],
                             idata[i][2] - idata[curr.second][2],
                             vperp[0], vperp[1], vperp[2]);
-                if (dDist > maxDist) {
+                
+                if (dDist > maxDist + EPS_LOC) {
                     currC = i;
                     maxDist = dDist;
-                } else if (fabs(dDist) < EPS) {
+                } else if (fabs(dDist) < EPS_LOC) {
                     // on the same plane as abc
                     onPlane.push_back(i);
                 }
@@ -109,11 +127,17 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
                 return output;
             }
 
-            vcb = {idata[c][0] - idata[curr.second][0],
-                   idata[c][1] - idata[curr.second][1],
-                   idata[c][2] - idata[curr.second][2]};
+            vcb = {idata[currC][0] - idata[curr.second][0],
+                   idata[currC][1] - idata[curr.second][1],
+                   idata[currC][2] - idata[curr.second][2]};
             // find new perpendicular vector
         } while (prevC != currC); // c not changed => all points on one side
+
+        c = currC;
+
+        R("FINAL C: " << idata[c][0] << ", " <<
+                         idata[c][1] << ", " <<
+                         idata[c][2]);
 
         // PROBLEM
         // this returns all points on faces, but I only need their convex hull
@@ -125,16 +149,25 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
         onPlane.push_back(curr.first);
         onPlane.push_back(curr.second);
 
+        R("PERPENDICULAR: " << vperp[0] << ", " << vperp[1] <<
+                ", " << vperp[2]);
         Points2D planar; // 3d points on plane converted to 2d
         std::pair<int, int> coords; // id of coordinates to use
-        if (fabs(vperp[0]) > EPS) {
+        if (fabs(vperp[0]) > EPS_LOC) {
             coords = {1, 2};
-        } else if (fabs(vperp[1]) > EPS) {
+        } else if (fabs(vperp[1]) > EPS_LOC) {
             coords = {0, 2};
         } else {
             coords = {0, 1};
         }
+        R("USING COORDS " << coords.first << ", " << coords.second);
+
+        R("CONSTRUCTING FACE HULL OF");
         for (auto& i : onPlane) {
+            R("  " << idata[i][0] << ", " << idata[i][1] << ", " << idata[i][2]
+                   << " aka " <<
+                      idata[i][coords.first] << ", " <<
+                      idata[i][coords.second] << " (id: " << i << ")");
             planar.add({idata[i][coords.first], idata[i][coords.second]});
         }
 
@@ -144,23 +177,68 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
         solver.solveID(planar, faceID);
         unsigned fs = faceID.size();
 
-        // add new found edges to list, remove already found ones
+        R("RESULTING FACE HULL")
+        for (auto& i : faceID) {
+            R("  " << idata[onPlane[i]][coords.first] << ", " <<
+                      idata[onPlane[i]][coords.second] <<
+                      " (id: " << onPlane[i] << ")");
+        }
+
+        bool flipped = 0;
         for (unsigned i = 0; i < fs; i++) {
-            int ex = faceID[i], ey = faceID[(i+1) % fs];
-            std::set<edge_t>::iterator occ = edges.find({ey, ex});
-            if (occ != edges.end()) {
-                edges.erase(occ);
-            } else {
-                edges.insert({ex, ey});
+            unsigned ex = onPlane[faceID[i]],
+                     ey = onPlane[faceID[(i+1) % fs]];
+            if (ex == curr.second && ey == curr.first) {
+                R("EDGE ROTATION");
+                flipped = 1;
             }
         }
 
-        Points2D face;
-        for (auto& i : faceID) {
-            face.add(idata[i]);
+        // add new found fresh to list, remove already found ones
+        for (unsigned i = 0; i < fs; i++) {
+            unsigned ex = onPlane[faceID[i]],
+                     ey = onPlane[faceID[(i+1) % fs]];
+            edge_t oe = {ex, ey};
+            if (ex >= ey) {
+                oe = {ey, ex};
+            }
+            if (flipped) {
+                std::swap(ex, ey);
+            }
+            if (closed.find(oe) != closed.end()) {
+                R("CLOSE EDGE: " << idata[ex][0] << ", " <<
+                                    idata[ex][1] << ", " <<
+                                    idata[ex][2] << " | " <<
+                                    idata[ey][0] << ", " <<
+                                    idata[ey][1] << ", " <<
+                                    idata[ey][2] << " (id: " << ex <<
+                                    ", " << ey << ")");
+                fresh.erase({ey, ex});
+                fresh.erase({ex, ey});
+            } else {
+                R("OPEN EDGE: " << idata[ey][0] << ", " <<
+                                     idata[ey][1] << ", " <<
+                                     idata[ey][2] << " | " <<
+                                     idata[ex][0] << ", " <<
+                                     idata[ex][1] << ", " <<
+                                     idata[ex][2] << " (id: " << ex <<
+                                    ", " << ey << ")");
+                fresh.insert({ey, ex});
+                closed.insert(oe);
+            }
+        }
+
+        Points3D face;
+        for (auto i : faceID) {
+            face.add(idata[onPlane[i]]);
         }
         output.addFace(face);
-    } while (!edges.empty());
+    } while (!fresh.empty());
+
+    // polyhedron with two faces means a plane => remove one of the faces
+    if (output.getSize() == 2) {
+        output.popFace();
+    }
 
     return output;
 }
@@ -189,11 +267,11 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
             double d = dot(input[i][0], input[i][1], input[i][2], 
                            rndx,        rndy,        rndz);
             double dif = d - maxd;
-            if (dif > EPS) {
+            if (dif > EPS_LOC) {
                 maxd = d;
                 farcnt = 1;
                 far = i;
-            } else if (fabs(dif) < EPS) {
+            } else if (fabs(dif) < EPS_LOC) {
                 farcnt++;
             }
         }
@@ -218,12 +296,12 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
                        rndx,     rndy,     rndz);
         d /= iLen;
         double dif = d - maxd;
-        if (dif < -EPS) {
+        if (dif < -EPS_LOC) {
             paired = i;
             maxd = d;
             minLen = iLen;
-        } else if (fabs(dif) < EPS) {
-            if (iLen < minLen - EPS) {
+        } else if (fabs(dif) < EPS_LOC) {
+            if (iLen < minLen - EPS_LOC) {
                 paired = i;
                 minLen = iLen;
             }
