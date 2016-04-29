@@ -10,7 +10,7 @@ namespace ch
 {
 
 /**
- * Quickhull modified for convex hulls in 3d
+ * Quickhull modified for convex hulls in 3D
  */
 class Quickhull3D : public Solver3D
 {

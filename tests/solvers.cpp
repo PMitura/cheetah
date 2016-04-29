@@ -192,12 +192,23 @@ bool readFile3D(const std::string& filename, ch::Points3D& points)
     return true;
 }
 
+void printFaces3D(ch::Polyhedron& poly)
+{
+    for (auto& face : poly.getFaces()) {
+        R("Face:")
+        for (auto& pt : face.getData()) {
+            R("  " << pt[0] << ", " << pt[1] << ", " << pt[2]);
+        }
+    }
+}
+
 void testSingleFile3D(const std::string& filename, ch::Solver3D& solver)
 {
     ch::Points3D input;
     ch::Polyhedron output;
     ASSERT_TRUE(readFile3D(filename, input));
     solver.solve(input, output);
+    printFaces3D(output);
 }
 
 void testSolverPremade3D(ch::Solver3D& solver)

@@ -9,6 +9,7 @@
 #include "lib/geometry.h"
 #include "lib/structures.h"
 #include "solvers/solver_3d.h"
+#include "solvers/graham_scan_2d.h"
 
 namespace ch
 {

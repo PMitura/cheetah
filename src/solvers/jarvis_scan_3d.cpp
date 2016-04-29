@@ -3,7 +3,6 @@
 namespace ch
 {
 
-
 Polyhedron& JarvisScan3D::solve(const Points3D& input, Polyhedron& output)
 {
     // edge cases
@@ -27,23 +26,27 @@ Polyhedron& JarvisScan3D::solve(const Points3D& input, Polyhedron& output)
 Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
 {
     const data_t& idata = input.getData();
-    std::pair<unsigned, unsigned> init = findInitial(idata);
-    if (init.first >= init.second) {
-        std::swap(init.first, init.second);
-    }
+    typedef std::pair<unsigned, unsigned> edge_t;
+    edge_t init = findInitial(idata);
     // unprocessed edges
-    std::set<std::pair<unsigned, unsigned>> edges;
-    edges.insert(init);
+    std::set<edge_t> edges;
 
-    while (!edges.empty()) {
+    do {
         // points a, b
-        std::pair<unsigned, unsigned> curr = *(edges.begin());
+        edge_t curr = *(edges.begin());
         point_t vab = {idata[curr.first][0] - idata[curr.second][0],
                        idata[curr.first][1] - idata[curr.second][1],
                        idata[curr.first][2] - idata[curr.second][2]};
 
+        R("OVER EDGE: " << idata[curr.first][0] << ", " <<
+                           idata[curr.first][1] << ", " <<
+                           idata[curr.first][2] << " | " <<
+                           idata[curr.second][0] << ", " <<
+                           idata[curr.second][1] << ", " <<
+                           idata[curr.second][2]);
+
         point_t vcb, vperp;
-        unsigned c = -1;
+        int c = -1;
         // find some non-collinear c
         for (unsigned i = 0; i < idata.size(); i++) {
             // cannot reuse a, b
@@ -74,8 +77,9 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
             // update perpendicular vector
             vperp = perpendNormal3d(vab, vcb);
             // find new c
-            double dDist, maxDist;
+            double dDist, maxDist = 0.0;
             onPlane.clear();
+            onPlane.push_back(currC);
             prevC = currC;
             for (unsigned i = 0; i < idata.size(); i++) {
                 // cannot reuse a, b, c
@@ -114,7 +118,49 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
         // PROBLEM
         // this returns all points on faces, but I only need their convex hull
         // we need a way to find convex hull od points on plane, but in 3d
-    }
+        
+        // POSSIBLE SOLUTION
+        // eliminate one non-zero coordinate
+        
+        onPlane.push_back(curr.first);
+        onPlane.push_back(curr.second);
+
+        Points2D planar; // 3d points on plane converted to 2d
+        std::pair<int, int> coords; // id of coordinates to use
+        if (fabs(vperp[0]) > EPS) {
+            coords = {1, 2};
+        } else if (fabs(vperp[1]) > EPS) {
+            coords = {0, 2};
+        } else {
+            coords = {0, 1};
+        }
+        for (auto& i : onPlane) {
+            planar.add({idata[i][coords.first], idata[i][coords.second]});
+        }
+
+        // find points on diameter of face in ccw order
+        GrahamScan2D solver;
+        std::vector<unsigned> faceID;
+        solver.solveID(planar, faceID);
+        unsigned fs = faceID.size();
+
+        // add new found edges to list, remove already found ones
+        for (unsigned i = 0; i < fs; i++) {
+            int ex = faceID[i], ey = faceID[(i+1) % fs];
+            std::set<edge_t>::iterator occ = edges.find({ey, ex});
+            if (occ != edges.end()) {
+                edges.erase(occ);
+            } else {
+                edges.insert({ex, ey});
+            }
+        }
+
+        Points2D face;
+        for (auto& i : faceID) {
+            face.add(idata[i]);
+        }
+        output.addFace(face);
+    } while (!edges.empty());
 
     return output;
 }

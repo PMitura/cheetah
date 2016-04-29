@@ -32,7 +32,12 @@ Points2D& GrahamScan2D::solveSequential(const Points2D& input,
 
     sortPoints(inputData);
 
-    scan(inputData, output);
+    unsigned * ptStack = new unsigned[inputData.size()];
+    unsigned stackSize = scan(inputData, ptStack);
+    for (unsigned i = 0; i < stackSize; i++) {
+        output.add(inputData[ptStack[i]]);
+    }
+    delete[] ptStack;
 
     return output;
 }
@@ -54,10 +59,42 @@ Points2D& GrahamScan2D::solveParallel(const Points2D& input, Points2D& output)
 
     sortPointsParallel(inputData);
 
-    scan(inputData, output);
+    unsigned * ptStack = new unsigned[inputData.size()];
+    unsigned stackSize = scan(inputData, ptStack);
+    for (unsigned i = 0; i < stackSize; i++) {
+        output.add(inputData[ptStack[i]]);
+    }
+    delete[] ptStack;
 
     return output;
 
+}
+
+void GrahamScan2D::solveID(const Points2D& input, std::vector<unsigned>& ids)
+{
+    if (input.getSize() <= 2) {
+        for (unsigned i = 0; i < input.getSize(); i++) {
+            ids.push_back(0);
+        }
+        return;
+    }
+
+    order_.clear(); polar_.clear(); ids.clear();
+    const data_t& inputData = input.getData();
+
+    for (unsigned i = 0; i < inputData.size(); i++)
+        order_.push_back(i);
+    pivot_ = findMinY(inputData);
+    std::swap(order_.at(0), order_.at(pivot_));
+
+    sortPoints(inputData);
+
+    unsigned * ptStack = new unsigned[inputData.size()];
+    unsigned stackSize = scan(inputData, ptStack);
+    for (unsigned i = 0; i < stackSize; i++) {
+        ids.push_back(ptStack[i]);
+    }
+    delete[] ptStack;
 }
 
 int GrahamScan2D::findMinY(const data_t& points)
@@ -86,10 +123,9 @@ void GrahamScan2D::computeAngles(const data_t& points)
     }
 }
 
-void GrahamScan2D::scan(const data_t& inputData, Points2D& output)
+unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
 {
     unsigned iPtr = 2, sPtr = 2, iSize = inputData.size();
-    unsigned * ptStack = new unsigned[iSize];
     ptStack[0] = order_[0];
     ptStack[1] = order_[1];
     while (iPtr < iSize) {
@@ -129,10 +165,7 @@ void GrahamScan2D::scan(const data_t& inputData, Points2D& output)
         }
     }
 
-    for (unsigned i = 0; i < sPtr; i++) {
-        output.add(inputData[ptStack[i]]);
-    }
-    delete[] ptStack;
+    return sPtr;
 }
 
 void GrahamScan2D::sortPoints(const data_t& inputData)

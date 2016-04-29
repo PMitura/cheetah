@@ -24,6 +24,9 @@ class GrahamScan2D : public Solver2D
 
         Points2D& solveParallel(const Points2D& input, Points2D& output);
 
+        /** same as solve, but returns ids of found points */
+        void solveID(const Points2D& input, std::vector<unsigned>& ids);
+
     private:
         /** finds point with minimum Y in given set */
         int findMinY(const data_t& points);
@@ -35,7 +38,7 @@ class GrahamScan2D : public Solver2D
         void sortPoints(const data_t& inputData);
 
         /** Does linear pass through sorted points and finds hull */
-        void scan(const data_t& inputData, Points2D& output);
+        unsigned scan(const data_t& inputData, unsigned * ptStack);
 
         /** Parallel point sorting */
         void sortPointsParallel(const data_t& inputData);
