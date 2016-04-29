@@ -71,7 +71,8 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
         std::vector<unsigned> onPlane;
         // find such c, that all points are on one side of plane abc
         do {
-
+            // update perpendicular vector
+            vperp = perpendNormal3d(vab, vcb);
             // find new c
             double dDist, maxDist;
             onPlane.clear();
@@ -100,6 +101,7 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
             if (itN++ >= idata.size()) {
                 // this happening means wrong choice of ab
                 // report occurencies of this call as a bug
+                std::cerr << "Cannot find third point of plane" << std::endl;
                 return output;
             }
 
@@ -107,8 +109,11 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
                    idata[c][1] - idata[curr.second][1],
                    idata[c][2] - idata[curr.second][2]};
             // find new perpendicular vector
-            vperp = perpend3d(vab, vcb);
         } while (prevC != currC); // c not changed => all points on one side
+
+        // PROBLEM
+        // this returns all points on faces, but I only need their convex hull
+        // we need a way to find convex hull od points on plane, but in 3d
     }
 
     return output;

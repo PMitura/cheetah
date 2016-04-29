@@ -123,12 +123,20 @@ inline double vectLen3d(const point_t& v)
     return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
-/** return normalized vector perpendicular to two given vectors */
+/** return vector perpendicular to two given vectors */
 inline point_t perpend3d(const point_t& va, const point_t& vb)
 {
     return {va[1]*vb[2] - vb[1]*va[2],
             va[2]*vb[0] - vb[2]*va[0],
             va[0]*vb[1] - vb[0]*va[1]};
+}
+
+/** return normalized vector perpendicular to two given vectors */
+inline point_t perpendNormal3d(const point_t& va, const point_t& vb)
+{
+    point_t nn = perpend3d(va, vb);
+    double coef = vectLen3d(nn);
+    return {nn[0] / coef, nn[1] / coef, nn[2] / coef};
 }
 
 inline bool zeroVect(const point_t& v)
