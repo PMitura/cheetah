@@ -203,34 +203,52 @@ void printFaces3D(ch::Polyhedron& poly)
     }
 }
 
-void testSingleFile3D(const std::string& filename, ch::Solver3D& solver)
+void testSingleFile3D(const std::string& filename, ch::Solver3D& solver, 
+                      const std::vector<unsigned>& sizes, unsigned fcnt)
 {
     ch::Points3D input;
     ch::Polyhedron output;
     ASSERT_TRUE(readFile3D(filename, input));
     solver.solve(input, output);
     printFaces3D(output);
+    
+    std::vector<unsigned> fndSizes(100, 0);
+    EXPECT_EQ(fcnt, output.getSize());
+    for (auto& i : output.getFaces()) {
+        fndSizes[i.getSize()]++;
+    }
+    for (unsigned i = 0; i < sizes.size(); i++) {
+        EXPECT_EQ(sizes[i], fndSizes[i]);
+    }
 }
 
 void testSolverPremade3D(ch::Solver3D& solver)
 {
+    std::vector<unsigned> sizes;
+
     // reg. tetrahedron, four triangle faces, one point inside
-    testSingleFile3D("tests/files/3d_tetrahedron.in", solver);
+    sizes = {0, 0, 0, 4};
+    testSingleFile3D("tests/files/3d_tetrahedron.in", solver, sizes, 4);
 
     // reg. cube, six square faces, reg. tetrahedron inside, 2 pts on sides
-    testSingleFile3D("tests/files/3d_cube.in", solver);
+    sizes = {0, 0, 0, 0, 6};
+    testSingleFile3D("tests/files/3d_cube.in", solver, sizes, 6);
 
     // reg. octahedron, eight triangle faces, embedded tetrahedron
-    testSingleFile3D("tests/files/3d_octahedron.in", solver);
+    sizes = {0, 0, 0, 8};
+    testSingleFile3D("tests/files/3d_octahedron.in", solver, sizes, 8);
 
     // reg. dodecahedron, twelve pentagonal faces
-    testSingleFile3D("tests/files/3d_dodecahedron.in", solver);
+    sizes = {0, 0, 0, 0, 0, 12};
+    testSingleFile3D("tests/files/3d_dodecahedron.in", solver, sizes, 12);
 
     // reg. isocahedron, twenty triangle faces
-    testSingleFile3D("tests/files/3d_isocahedron.in", solver);
+    sizes = {0, 0, 0, 20};
+    testSingleFile3D("tests/files/3d_isocahedron.in", solver, sizes, 20);
 
     // 5 points on plane
-    testSingleFile3D("tests/files/3d_plane.in", solver);
+    sizes = {0, 0, 0, 0, 1};
+    testSingleFile3D("tests/files/3d_plane.in", solver, sizes, 1);
 }
 
 TEST(Jarvis3DTest, Premade)

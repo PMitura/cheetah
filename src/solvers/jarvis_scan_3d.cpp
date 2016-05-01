@@ -83,55 +83,35 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
             return output;
         }
 
-
-        unsigned prevC, currC = c, itN = 0;
+        unsigned currC = c;
         std::vector<unsigned> onPlane;
-        // find such c, that all points are on one side of plane abc
-        do {
-            // update perpendicular vector
-            vperp = perpendNormal3d(vab, vcb);
-            // find new c
-            double dDist, maxDist = 0;
-            onPlane.clear();
-            onPlane.push_back(currC);
-            prevC = currC;
-            R("TRY C: " << idata[currC][0] << ", " <<
-                           idata[currC][1] << ", " <<
-                           idata[currC][2]);
-            for (unsigned i = 0; i < idata.size(); i++) {
-                // cannot reuse a, b, c
-                if (i == curr.first || i == curr.second || i == currC) {
-                    continue;
-                }
+        onPlane.push_back(c);
+        for (unsigned i = 0; i < idata.size(); i++) {
+            // cannot reuse a, b and initial c
+            if (i == curr.first || i == curr.second || i == c) {
+                continue;
+            }
 
-                // compute directional distance
-                dDist = dot(idata[i][0] - idata[curr.second][0],
+            // compute direction
+            double dd = dot(idata[i][0] - idata[curr.second][0],
                             idata[i][1] - idata[curr.second][1],
                             idata[i][2] - idata[curr.second][2],
                             vperp[0], vperp[1], vperp[2]);
-                
-                if (dDist > maxDist + EPS_LOC) {
-                    currC = i;
-                    maxDist = dDist;
-                } else if (fabs(dDist) < EPS_LOC) {
-                    // on the same plane as abc
-                    onPlane.push_back(i);
-                }
-            }
 
-            // detect infinite loop
-            if (itN++ >= idata.size()) {
-                // this happening means wrong choice of ab
-                // report occurencies of this call as a bug
-                std::cerr << "Cannot find third point of plane" << std::endl;
-                return output;
+            if (dd > EPS_LOC) {
+                // new c
+                currC = i; 
+                vcb = {idata[currC][0] - idata[curr.second][0],
+                       idata[currC][1] - idata[curr.second][1],
+                       idata[currC][2] - idata[curr.second][2]};
+                vperp = perpendNormal3d(vab, vcb);
+                onPlane.clear();
+                onPlane.push_back(i);
+            } else if (fabs(dd) < EPS_LOC) {
+                // on the same plane as abc
+                onPlane.push_back(i);
             }
-
-            vcb = {idata[currC][0] - idata[curr.second][0],
-                   idata[currC][1] - idata[curr.second][1],
-                   idata[currC][2] - idata[curr.second][2]};
-            // find new perpendicular vector
-        } while (prevC != currC); // c not changed => all points on one side
+        }
 
         c = currC;
 
@@ -255,27 +235,19 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
     double maxd;
     unsigned far, farcnt;
 
-    // find farthest point in some direction
-    do {
-        far = 0;
-        farcnt = 1;
-        maxd = DBL_MIN;
-        // random direction vector
-        rndx = randomOne(); rndy = randomOne(); rndz = randomOne();
-        // R(rndx << ", " << rndy << ", " << rndz);
-        for (unsigned i = 0; i < input.size(); i++) {
-            double d = dot(input[i][0], input[i][1], input[i][2], 
-                           rndx,        rndy,        rndz);
-            double dif = d - maxd;
-            if (dif > EPS_LOC) {
-                maxd = d;
-                farcnt = 1;
-                far = i;
-            } else if (fabs(dif) < EPS_LOC) {
-                farcnt++;
-            }
+    // find farthest point in downwards direction
+    far = 0;
+    maxd = DBL_MIN;
+    rndx = 0; rndy = -1; rndz = 0;
+    for (unsigned i = 0; i < input.size(); i++) {
+        double d = dot(input[i][0], input[i][1], input[i][2], 
+                rndx,        rndy,        rndz);
+        double dif = d - maxd;
+        if (dif > EPS_LOC) {
+            maxd = d;
+            far = i;
         }
-    } while (farcnt > 3);
+    }
 
     unsigned paired = 0;
     maxd = DBL_MAX;
