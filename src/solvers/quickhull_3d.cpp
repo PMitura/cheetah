@@ -3,12 +3,17 @@
 namespace ch
 {
 
+Quickhull3D::Quickhull3D()
+{
+    name_ = "3D Quickhull";
+}
+
 Polyhedron& Quickhull3D::solve(const Points3D& input, Polyhedron& output)
 {
     // edge cases
     if (input.getSize() == 0) {
         return output;
-    } else if (input.getSize() < 3) {
+    } else if (input.getSize() <= 3) {
         Points3D plane;
         const data_t& inputData = input.getData();
         for (auto& i : inputData) {
@@ -24,6 +29,7 @@ Polyhedron& Quickhull3D::solve(const Points3D& input, Polyhedron& output)
 
 Polyhedron& Quickhull3D::solveNaive(const Points3D& input, Polyhedron& output)
 {
+    Polyhedron initial = findInitial(input);
     return output;
 }
 

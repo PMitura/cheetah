@@ -7,6 +7,7 @@ JarvisScan3D::JarvisScan3D()
 {
     // fixed value is the lesser evil here, relative epsilon causes all sorts
     // of weird behavior
+    name_ = "3D Jarvis";
     EPS_LOC = 1e-6;
 }
 

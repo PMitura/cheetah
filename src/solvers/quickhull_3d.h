@@ -15,6 +15,7 @@ namespace ch
 class Quickhull3D : public Solver3D
 {
     public:
+        Quickhull3D();
         /**
          * Find convex hull of input data set.
          *
@@ -24,7 +25,12 @@ class Quickhull3D : public Solver3D
         Polyhedron& solve(const Points3D& input, Polyhedron& output);
 
     private:
-        Polyhedron& solveNaive(const Points3D& input, Polyhedron& output);
+        Polyhedron& solveSequential(const Points3D& input, Polyhedron& output);
+
+        /** finds initial tetrahedron */
+        Polyhedron findInitial(const Points3D& input);
+
+
 };
 
 }
