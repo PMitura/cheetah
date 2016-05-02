@@ -106,6 +106,7 @@ void testSolverGen2D(ch::Solver2D& solver)
     testSingleGen(50, 50, 100000, solver);
 }
 
+/*
 TEST(JarvisScan2DTest, Premade)
 {
     ch::JarvisScan2D jarvis;
@@ -165,6 +166,8 @@ TEST(Chan2DTest, Generated)
     ch::Chan2D chan;
     testSolverGen2D(chan);
 }
+*/
+
 /*
 TEST(PrintHull, EraseMe)
 {
@@ -258,11 +261,11 @@ TEST(Jarvis3DTest, Premade)
     ch::JarvisScan3D jarvis;
     testSolverPremade3D(jarvis);
 }
-*/
 
 TEST(Quickhull3DTest, Premade)
 {
     ch::Quickhull3D quickhull;
     testSolverPremade3D(quickhull);
 }
+*/
 

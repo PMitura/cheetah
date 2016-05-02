@@ -73,10 +73,12 @@ void Quickhull3D::findInitial(const data_t& input)
         // all identical points
         return;
     }
+    int aidx = minpts[farc], bidx = maxpts[farc];
+    QVertex a(input[aidx]), b(input[bidx]);
+    point_t ab = {b[0] - a[0], b[1] - a[1], b[2] - a[2]}, bc, abcNorm, abcTemp;
 
     // find third point c - point farthest from ab
-    QVertex a(input[minpts[farc]]), b(input[maxpts[farc]]);
-    point_t ab = {b[0] - a[0], b[1] - a[1], b[2] - a[2]}, bc, abcNorm, abcTemp;
+
     double dd;
     maxDist = 0;
     int cidx = -1;
@@ -84,7 +86,7 @@ void Quickhull3D::findInitial(const data_t& input)
         // only relative distance
         bc = {input[i][0] - b[0], input[i][1] - b[1], input[i][2] - b[2]};
         abcTemp = perpend3d(ab, bc);
-        dd = vectSqr3d(abcNorm);
+        dd = vectSqr3d(abcTemp);
         if (dd > maxDist + EPS) {
             maxDist = dd;
             cidx = i;
@@ -155,7 +157,29 @@ void Quickhull3D::findInitial(const data_t& input)
     }
 
     // divide rest of the points under faces of tetrahedron
-    // TODO
+    point_t curr;
+    for (int i = 0; i < (int) input.size(); i++) {
+        // do not reuse tetrahedron vertices
+        if (i == aidx || i == bidx || i == cidx || i == didx) {
+            continue;
+        }
+
+        maxDist = 0;
+        int faceID = -1;
+        for (int f = 0; f < 4; f++) {
+            dd =   faces_[f].normal_[0] * input[i][0]
+                 + faces_[f].normal_[1] * input[i][1]
+                 + faces_[f].normal_[2] * input[i][2]
+                 - faces_[f].offset_;
+            if (dd > maxDist + EPS) {
+                faceID = f;
+                maxDist = dd;
+            }
+        }
+        if (faceID >= 0) {
+
+        }
+    }
 }
 
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/geometry.h"
 #include "lib/structures.h"
 
 /**
@@ -26,9 +27,9 @@ struct QVertex {
 };
 
 struct QHalfEdge {
-    QHalfEdge() : tail_(NULL), twin_(NULL), prev_(NULL), next_(NULL),
+    QHalfEdge() : head_(NULL), twin_(NULL), prev_(NULL), next_(NULL),
         face_(NULL) {}
-    QVertex * tail_;
+    QVertex * head_;
     QHalfEdge * twin_, * prev_, * next_;
     QFace * face_;
 
@@ -41,6 +42,8 @@ struct QFace {
     QFace * next_, * prev_;
     QHalfEdge * edge_;
     std::vector<unsigned> conflicts_;
+    point_t normal_, centroid_;
+    double offset_;
 
     /** Initialize face as cyclic linked list of edges from vertices */
     void init(std::vector<QVertex>& vertices);
