@@ -12,6 +12,7 @@
 #include "solvers/quickhull_2d.h"
 #include "solvers/chan_2d.h"
 #include "solvers/jarvis_scan_3d.h"
+#include "solvers/quickhull_3d.h"
 
 void printHull2D(ch::Points2D& points, std::ostream& out)
 {
@@ -251,8 +252,17 @@ void testSolverPremade3D(ch::Solver3D& solver)
     testSingleFile3D("tests/files/3d_plane.in", solver, sizes, 1);
 }
 
+/*
 TEST(Jarvis3DTest, Premade)
 {
     ch::JarvisScan3D jarvis;
     testSolverPremade3D(jarvis);
 }
+*/
+
+TEST(Quickhull3DTest, Premade)
+{
+    ch::Quickhull3D quickhull;
+    testSolverPremade3D(quickhull);
+}
+

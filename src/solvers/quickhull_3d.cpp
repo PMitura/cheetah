@@ -31,12 +31,14 @@ Polyhedron& Quickhull3D::solveSequential(const Points3D& input,
                                          Polyhedron& output)
 {
     const data_t& idata = input.getData();
+    faces_.clear();
 
-    Polyhedron initial = findInitial(idata);
+    findInitial(idata);
+
     return output;
 }
 
-Polyhedron Quickhull3D::findInitial(const data_t& input)
+void Quickhull3D::findInitial(const data_t& input)
 {
     // find extreme points
     unsigned minpts[3], maxpts[3];
@@ -69,7 +71,7 @@ Polyhedron Quickhull3D::findInitial(const data_t& input)
     }
     if (maxDist < EPS) {
         // all identical points
-        return Polyhedron();
+        return;
     }
 
     // find third point c - point farthest from ab
@@ -91,7 +93,7 @@ Polyhedron Quickhull3D::findInitial(const data_t& input)
     }
     if (cidx == -1) {
         // all collinear points
-        return Polyhedron();
+        return;
     }
     QVertex c(input[cidx]);
 
@@ -108,11 +110,52 @@ Polyhedron Quickhull3D::findInitial(const data_t& input)
     }
     if (didx == -1) {
         // all coplanar points
-        return Polyhedron();
+        return;
     }
     QVertex d(input[didx]);
 
-    return Polyhedron();
+    // find out orientation of found tetrahedron and initialize half edge mesh
+    // represented polyhedron accordingly
+    for (int i = 0; i < 4; i++) {
+        faces_.push_back(QFace());
+    }
+    std::vector<QVertex> used;
+    if (dot(d.crds_, abcNorm) - base < -EPS) {
+        used = {a, b, c};
+        faces_[0].init(used);
+        used = {d, b, a};
+        faces_[1].init(used);
+        used = {d, c, b};
+        faces_[2].init(used);
+        used = {d, a, c};
+        faces_[3].init(used);
+
+        faces_[1].edgeAt(1) -> pairWith(faces_[2].edgeAt(0));
+        faces_[1].edgeAt(2) -> pairWith(faces_[0].edgeAt(1));
+        faces_[2].edgeAt(1) -> pairWith(faces_[3].edgeAt(0));
+        faces_[2].edgeAt(2) -> pairWith(faces_[0].edgeAt(2));
+        faces_[3].edgeAt(1) -> pairWith(faces_[1].edgeAt(0));
+        faces_[3].edgeAt(2) -> pairWith(faces_[0].edgeAt(0));
+    } else {
+        used = {a, c, b};
+        faces_[0].init(used);
+        used = {d, a, b};
+        faces_[1].init(used);
+        used = {d, b, c};
+        faces_[2].init(used);
+        used = {d, c, a};
+        faces_[3].init(used);
+
+        faces_[1].edgeAt(0) -> pairWith(faces_[2].edgeAt(1));
+        faces_[1].edgeAt(2) -> pairWith(faces_[0].edgeAt(0));
+        faces_[2].edgeAt(0) -> pairWith(faces_[3].edgeAt(1));
+        faces_[2].edgeAt(2) -> pairWith(faces_[0].edgeAt(2));
+        faces_[3].edgeAt(0) -> pairWith(faces_[1].edgeAt(1));
+        faces_[3].edgeAt(2) -> pairWith(faces_[0].edgeAt(1));
+    }
+
+    // divide rest of the points under faces of tetrahedron
+    // TODO
 }
 
 }
