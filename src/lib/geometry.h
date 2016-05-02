@@ -8,7 +8,7 @@
 namespace ch
 {
 
-const double EPS = 1e-6;
+const double EPS = 1e-12;
 const double PI  = 3.141592653589793238462643383279;
 
 /** computes angle of line segment ab and x axis */
@@ -27,10 +27,16 @@ inline double dot(point2d_t a, point2d_t b)
 {
     return a.first * b.first + a.second * b.second;
 }
+
+/** 3d version */
 inline double dot(double ax, double ay, double az,
                   double bx, double by, double bz)
 {
     return ax*bx + ay*by + az*bz;
+}
+inline double dot(const point_t& a, const point_t& b)
+{
+    return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
 }
 
 /** computes distance of points a and b */
@@ -52,6 +58,12 @@ inline double dist(point_t& a, const point_t& b)
 inline double dist(point2d_t a, point2d_t b)
 {
     return hypot(a.first - b.first, a.second - b.second);
+}
+
+inline double dist3d(const point_t& a, const point_t& b)
+{
+    return sqrt((a[0] - b[0])*(a[0] - b[0]) + (a[1] - b[1])*(a[1] - b[1])
+        + (a[2] - b[2])*(a[2] - b[2]));
 }
 
 /** area of square given by side */
@@ -83,13 +95,13 @@ inline point2d_t scale(point2d_t v, double factor)
 }
 
 /** computes line-point distance */
-inline double distToLine(point2d_t a, point2d_t b, point2d_t p)
+inline double distToLine(point2d_t a, point2d_t b, point2d_t x)
 {
-    point2d_t ap = vectorize(a, p),
+    point2d_t ap = vectorize(a, x),
               ab = vectorize(a, b);
     double u = dot(ap, ab) / square(ab);
     point2d_t c = translate(a, scale(ab, u));
-    return dist(p, c);
+    return dist(x, c);
 }
 
 inline double partCross(const double& cx, const double& cy,
@@ -118,9 +130,16 @@ inline int orientation(const double& ax, const double& ay,
     return (cross > EPS) ? 1 : 2; // counter-clockwise or clockwise
 }
 
+/** Length of a 3d vector */
 inline double vectLen3d(const point_t& v)
 {
     return sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+}
+
+/** Squared length of a 3d vector (faster computation) */
+inline double vectSqr3d(const point_t& v)
+{
+    return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
 }
 
 /** return vector perpendicular to two given vectors */
