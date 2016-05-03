@@ -55,6 +55,9 @@ class Quickhull2D : public Solver2D
         unsigned int parallelThreshold_;
         const data_t* globIn_;
         Points2D* globOut_;
+
+        /** local epsilon value */
+        double EPS_LOC;
 };
 
 }

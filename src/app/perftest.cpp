@@ -7,14 +7,14 @@ void PerfTest::runAllTests()
 {
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
-    solvers.push_back(new GrahamScan2D());
+    // solvers.push_back(new GrahamScan2D());
     // solvers.push_back(new MonotoneChain2D());
     solvers.push_back(new Quickhull2D());
     // solvers.push_back(new JarvisScan2D());
-    solvers.push_back(new Chan2D());
+    // solvers.push_back(new Chan2D());
 
     // setup parallelism
-    omp_set_num_threads(1);
+    omp_set_num_threads(4);
 
     // run tests
     // smallTests(solvers);

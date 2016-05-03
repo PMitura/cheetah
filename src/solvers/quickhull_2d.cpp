@@ -7,6 +7,7 @@ Quickhull2D::Quickhull2D()
     :globIn_(NULL), globOut_(NULL)
 {
     name_ = "Quickhull";
+    EPS_LOC = 1e-6;
 }
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
@@ -81,9 +82,9 @@ void Quickhull2D::recSplit(point_t& a, point_t& b, point_t& c,
     double aco, cbo;
     if (upper) {
         for (auto& pt : plane) {
-            if (pt[0] < c[0] - EPS) {
+            if (pt[0] < c[0] - EPS_LOC) {
                 aco = cross(a[0], a[1], c[0], c[1], pt[0], pt[1]);
-                if (aco > EPS) {
+                if (aco > EPS_LOC) {
                     acPlane.push_back(pt);
                     if (fabs(aco) > acMax) {
                         acFar = pt;
@@ -93,9 +94,9 @@ void Quickhull2D::recSplit(point_t& a, point_t& b, point_t& c,
                 }
             }
 
-            if (pt[0] > c[0] + EPS) {
+            if (pt[0] > c[0] + EPS_LOC) {
                 cbo = cross(c[0], c[1], b[0], b[1], pt[0], pt[1]);
-                if (cbo > EPS) {
+                if (cbo > EPS_LOC) {
                     cbPlane.push_back(pt);
                     if (fabs(cbo) > cbMax) {
                         cbFar = pt;
@@ -106,9 +107,9 @@ void Quickhull2D::recSplit(point_t& a, point_t& b, point_t& c,
         }
     } else {
         for (auto& pt : plane) {
-            if (pt[0] > c[0] + EPS) {
+            if (pt[0] > c[0] + EPS_LOC) {
                 aco = cross(a[0], a[1], c[0], c[1], pt[0], pt[1]);
-                if (aco > EPS) {
+                if (aco > EPS_LOC) {
                     acPlane.push_back(pt);
                     if (fabs(aco) > acMax) {
                         acFar = pt;
@@ -118,9 +119,9 @@ void Quickhull2D::recSplit(point_t& a, point_t& b, point_t& c,
                 }
             }
 
-            if (pt[0] < c[0] - EPS) {
+            if (pt[0] < c[0] - EPS_LOC) {
                 cbo = cross(c[0], c[1], b[0], b[1], pt[0], pt[1]);
-                if (cbo > EPS) {
+                if (cbo > EPS_LOC) {
                     cbPlane.push_back(pt);
                     if (fabs(cbo) > cbMax) {
                         cbFar = pt;
@@ -150,7 +151,7 @@ void Quickhull2D::recOptimal(point_t& a, point_t& b, point_t& c,
     double aco, cbo;
     for (auto& pt : plane) {
         aco = cross(a[0], a[1], c[0], c[1], pt[0], pt[1]);
-        if (aco > EPS) {
+        if (aco > EPS_LOC) {
             acPlane.push_back(pt);
             if (fabs(aco) > acMax) {
                 acFar = pt;
@@ -160,7 +161,7 @@ void Quickhull2D::recOptimal(point_t& a, point_t& b, point_t& c,
         }
 
         cbo = cross(c[0], c[1], b[0], b[1], pt[0], pt[1]);
-        if (cbo > EPS) {
+        if (cbo > EPS_LOC) {
             cbPlane.push_back(pt);
             if (fabs(cbo) > cbMax) {
                 cbFar = pt;
@@ -207,13 +208,13 @@ Points2D& Quickhull2D::solveOptimal(const Points2D& input, Points2D& output)
                          pivotRight[0], pivotRight[1],
                          pt[0],         pt[1]);
         // double o = partCross(pt[0], pt[1], alpha, beta, gamma);
-        if (o > EPS) {
+        if (o > EPS_LOC) {
             topPlane.push_back(pt);
             if (fabs(o) > topMax) {
                 topFar = pt;
                 topMax = fabs(o);
             }
-        } else if (o < -EPS) {
+        } else if (o < -EPS_LOC) {
             botPlane.push_back(pt);
             if (fabs(o) > botMax) {
                 botFar = pt;
@@ -266,7 +267,7 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
         int pt = plane[i];
         double aco = cross(a[0], a[1], c[0], c[1],
                         (*globIn_)[pt][0], (*globIn_)[pt][1]);
-        if (aco > EPS) {
+        if (aco > EPS_LOC) {
             acPlane.push_back(pt);
             double fac = fabs(aco);
             if (fac > acMax) {
@@ -278,7 +279,7 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
 
         double cbo = cross(c[0], c[1], b[0], b[1],
                         (*globIn_)[pt][0], (*globIn_)[pt][1]);
-        if (cbo > EPS) {
+        if (cbo > EPS_LOC) {
             cbPlane.push_back(pt);
             double fcb = fabs(cbo);
             if (fcb > cbMax) {
@@ -295,6 +296,7 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
 
     if (acPlane.size() > parallelThreshold_ &&
         cbPlane.size() > parallelThreshold_) {
+        // R("PARASPLIT " << acPlane.size() << " - " << cbPlane.size());
 #pragma omp parallel
         {
 #pragma omp sections
@@ -328,7 +330,7 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
 
     const data_t& inputData = input.getData();
     globIn_ = &(input.getData());
-    parallelThreshold_ = 100000000;
+    parallelThreshold_ = 100;
 
     std::pair<point_t, point_t> pivots = minMaxX(inputData);
     // std::pair<point_t, point_t> pivots = farthestPoints(inputData);
@@ -351,8 +353,8 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
            beta  = pivotLeft[0] - pivotRight[0],
            gamma = beta*pivotRight[1] - alpha*pivotRight[0];
     // precomputed cross has lower precision
-    double oldEPS = EPS;
-    EPS = 1e-6; 
+    double oldEPS_LOC = EPS_LOC;
+    EPS_LOC = 1e-6; 
     */
 
     // extended divide to planes
@@ -362,13 +364,13 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
                          pivotRight[0],   pivotRight[1],
                          inputData[i][0], inputData[i][1]);
         double oa = fabs(o);
-        if (o > EPS) {
+        if (o > EPS_LOC) {
             topPlane[topPtr++] = i;
             if (oa > topMax) {
                 topFar = i;
                 topMax = oa;
             }
-        } else if (o < -EPS) {
+        } else if (o < -EPS_LOC) {
             botPlane[botPtr++] = i;
             if (oa > botMax) {
                 botFar = i;
@@ -406,7 +408,7 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
         output.add(pt);
     }
 
-    // EPS = oldEPS; // return EPS back to previous state
+    // EPS_LOC = oldEPS_LOC; // return EPS_LOC back to previous state
 
     return output;
 }
@@ -491,19 +493,19 @@ std::pair<point_t, point_t> Quickhull2D::minMaxX(const data_t& points)
     point_t minX = points[0], maxX = points[0];
     for (unsigned i = 1; i < points.size(); i++) {
         delta = minX[0] - points[i][0];
-        if (delta > EPS) {
+        if (delta > EPS_LOC) {
             minX = points[i];
-        } else if (fabs(delta) < EPS) {
-            if (minX[1] + EPS < points[i][1]) {
+        } else if (fabs(delta) < EPS_LOC) {
+            if (minX[1] + EPS_LOC < points[i][1]) {
                 minX = points[i];
             }
         }
 
         delta = maxX[0] - points[i][0];
-        if (delta < -EPS) {
+        if (delta < -EPS_LOC) {
             maxX = points[i];
-        } else if (fabs(delta) < EPS) {
-            if (maxX[1] - EPS > points[i][1]) {
+        } else if (fabs(delta) < EPS_LOC) {
+            if (maxX[1] - EPS_LOC > points[i][1]) {
                 maxX = points[i];
             }
         }
@@ -563,7 +565,7 @@ point_t Quickhull2D::planeFarthestCross(point_t& a, point_t& b,
            currCross;
     for (auto& pt : plane) {
         currCross = cross(a[0], a[1], b[0], b[1], pt[0], pt[1]);
-        if (maxCross - currCross < -EPS) {
+        if (maxCross - currCross < -EPS_LOC) {
             maxCross = currCross;
             c = pt;
         }
@@ -579,7 +581,7 @@ point_t Quickhull2D::planeFarthestDist(point_t& a, point_t& b,
            currDist;
     for (auto& pt : plane) {
         currDist = distToLine({a[0], a[1]}, {b[0], b[1]}, {pt[0], pt[1]});
-        if (maxDist - currDist < -EPS) {
+        if (maxDist - currDist < -EPS_LOC) {
             maxDist = currDist;
             c = pt;
         }
