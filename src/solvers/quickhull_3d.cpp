@@ -31,11 +31,40 @@ Polyhedron& Quickhull3D::solveSequential(const Points3D& input,
                                          Polyhedron& output)
 {
     const data_t& idata = input.getData();
+    globIn_ = &idata;
     faces_.clear();
 
     findInitial(idata);
+    // iterate over faces until done
+    while (1) {
+        if (assigned_.empty()) {
+            break;
+        }
+        int eyePoint = nextVertex();
+    }
 
     return output;
+}
+
+int Quickhull3D::nextVertex()
+{
+    if (assigned_.empty()) {
+        return -1;
+    }
+    // find face of top point
+    QFace * face = assigned_.begin() -> second;
+    int nxt = -1;
+    double maxDist = 0, dd;
+    // iterate over points assigned to that face
+    for (auto& i : face -> assigned_) {
+        dd = distPlanePoint(face, (*globIn_)[i]);
+        if (dd > maxDist + EPS) {
+            maxDist = dd;
+            nxt = i;
+        }
+    }
+
+    return nxt;
 }
 
 void Quickhull3D::findInitial(const data_t& input)
@@ -78,14 +107,13 @@ void Quickhull3D::findInitial(const data_t& input)
     point_t ab = {b[0] - a[0], b[1] - a[1], b[2] - a[2]}, bc, abcNorm, abcTemp;
 
     // find third point c - point farthest from ab
-
     double dd;
     maxDist = 0;
     int cidx = -1;
     for (unsigned i = 0; i < input.size(); i++) {
         // only relative distance
         bc = {input[i][0] - b[0], input[i][1] - b[1], input[i][2] - b[2]};
-        abcTemp = perpend3d(ab, bc);
+        abcTemp = perpendNormal3d(ab, bc);
         dd = vectSqr3d(abcTemp);
         if (dd > maxDist + EPS) {
             maxDist = dd;
@@ -167,19 +195,22 @@ void Quickhull3D::findInitial(const data_t& input)
         maxDist = 0;
         int faceID = -1;
         for (int f = 0; f < 4; f++) {
-            dd =   faces_[f].normal_[0] * input[i][0]
-                 + faces_[f].normal_[1] * input[i][1]
-                 + faces_[f].normal_[2] * input[i][2]
-                 - faces_[f].offset_;
+            dd = distPlanePoint(&(faces_[f]), input[i]);
             if (dd > maxDist + EPS) {
                 faceID = f;
                 maxDist = dd;
             }
         }
         if (faceID >= 0) {
-
+            assign(i, faceID);
         }
     }
+}
+
+void Quickhull3D::assign(unsigned vertexID, unsigned faceID)
+{
+    assigned_[vertexID] = &(faces_[faceID]);
+    faces_[faceID].assigned_.insert(vertexID);
 }
 
 }

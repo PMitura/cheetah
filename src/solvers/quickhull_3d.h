@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "lib/geometry.h"
 #include "lib/half_edge.h"
@@ -29,6 +30,9 @@ class Quickhull3D : public Solver3D
         /** Beginning point for sequential solving */
         Polyhedron& solveSequential(const Points3D& input, Polyhedron& output);
 
+        /** Gives next vertex to be processed */
+        int nextVertex();
+
         /** 
          * Finds initial tetrahedron.
          *
@@ -37,10 +41,23 @@ class Quickhull3D : public Solver3D
          */
         void findInitial(const data_t& input);
 
+        /** Assigns given vertice to given face */
+        void assign(unsigned vertexID, unsigned faceID);
+
+        /**
+         * Input data set made global
+         */
+        const data_t* globIn_;
+
         /**
          * Global list of found faces in half-edge mesh structure
          */
         std::vector<QFace> faces_;
+
+        /**
+         * Global list of points assigned to some face
+         */
+        std::map<unsigned, QFace*> assigned_;
 };
 
 }

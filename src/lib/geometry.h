@@ -3,6 +3,7 @@
 #include <cmath>
 #include <utility>
 
+#include "lib/half_edge.h"
 #include "lib/structures.h"
 
 namespace ch
@@ -204,6 +205,14 @@ inline bool ptInPolygon(const data_t& poly, const point_t& point)
         return 0;
     }
     return 1;
+}
+
+inline double distPlanePoint(const QFace * plane, const point_t& pt)
+{
+    return   plane -> normal_[0] * pt[0]
+           + plane -> normal_[1] * pt[1]
+           + plane -> normal_[2] * pt[2]
+           - plane -> offset_;
 }
 
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <set>
+
 #include "lib/geometry.h"
 #include "lib/structures.h"
 
@@ -16,10 +18,12 @@ struct QFace;
 
 struct QVertex {
     QVertex(point_t pt)
-        : next_(NULL), prev_(NULL), edge_(NULL), crds_(pt) {}
+        : next_(NULL), prev_(NULL), edge_(NULL), assignedFace_(NULL),
+          crds_(pt) {}
     QVertex() : QVertex({0, 0, 0}) {}
     QVertex * next_, * prev_;
     QHalfEdge * edge_;
+    QFace * assignedFace_;
     point_t crds_;
     double operator[](unsigned x) {
         return crds_[x];
@@ -41,7 +45,7 @@ struct QFace {
     ~QFace();
     QFace * next_, * prev_;
     QHalfEdge * edge_;
-    std::vector<unsigned> conflicts_;
+    std::set<unsigned> assigned_;
     point_t normal_, centroid_;
     double offset_;
 
