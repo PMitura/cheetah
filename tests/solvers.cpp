@@ -261,11 +261,11 @@ TEST(Jarvis3DTest, Premade)
     ch::JarvisScan3D jarvis;
     testSolverPremade3D(jarvis);
 }
+*/
 
 TEST(Quickhull3DTest, Premade)
 {
     ch::Quickhull3D quickhull;
     testSolverPremade3D(quickhull);
 }
-*/
 

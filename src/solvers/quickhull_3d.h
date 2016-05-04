@@ -31,8 +31,13 @@ class Quickhull3D : public Solver3D
         Polyhedron& solveSequential(const Points3D& input, Polyhedron& output);
 
         /** Gives next vertex to be processed */
-        int nextVertex();
+        std::pair<QFace*, int> nextVertex();
 
+        /** Processes given vertex, adding it to partial hull */
+        void processVertex(QFace * face, unsigned index);
+
+        void findHorizon(const point_t& of, QFace * on, QHalfEdge * through,
+                         std::vector<QHalfEdge*>& horizon);
         /** 
          * Finds initial tetrahedron.
          *
@@ -43,6 +48,9 @@ class Quickhull3D : public Solver3D
 
         /** Assigns given vertice to given face */
         void assign(unsigned vertexID, unsigned faceID);
+
+        /** Opposite of assign */
+        void unassign(unsigned vertexID);
 
         /**
          * Input data set made global

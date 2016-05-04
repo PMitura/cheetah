@@ -41,7 +41,7 @@ struct QHalfEdge {
 };
 
 struct QFace {
-    QFace() : next_(NULL), prev_(NULL), edge_(NULL) {}
+    QFace() : next_(NULL), prev_(NULL), edge_(NULL), state_(FRESH) {}
     ~QFace();
     QFace * next_, * prev_;
     QHalfEdge * edge_;
@@ -49,11 +49,24 @@ struct QFace {
     point_t normal_, centroid_;
     double offset_;
 
+    enum State {FRESH, MERGED, CLOSED};
+    State state_;
+
     /** Initialize face as cyclic linked list of edges from vertices */
     void init(std::vector<QVertex>& vertices);
 
     /** Get n-th edge on a face */
     QHalfEdge * edgeAt(unsigned pos);
 };
+
+// Half-Edge Mesh related geometry methods ------------------------------------
+
+inline double distPlanePoint(const QFace * plane, const point_t& pt)
+{
+    return   plane -> normal_[0] * pt[0]
+           + plane -> normal_[1] * pt[1]
+           + plane -> normal_[2] * pt[2]
+           - plane -> offset_;
+}
 
 }

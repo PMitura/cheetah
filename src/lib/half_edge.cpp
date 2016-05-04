@@ -16,11 +16,12 @@ QFace::~QFace()
         curr = edge_;
         curr -> prev_ -> next_ = NULL;
         while (curr -> next_ != NULL) {
+            delete curr -> head_;
             prev = curr;
             curr = curr -> next_;
-            delete prev -> head_;
             delete prev;
         }
+        delete curr -> head_;
         delete curr;
     }
 }

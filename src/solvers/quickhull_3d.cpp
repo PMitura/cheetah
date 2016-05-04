@@ -40,16 +40,17 @@ Polyhedron& Quickhull3D::solveSequential(const Points3D& input,
         if (assigned_.empty()) {
             break;
         }
-        int eyePoint = nextVertex();
+        std::pair<QFace*, int> eyePoint = nextVertex();
+        processVertex(eyePoint.first, eyePoint.second);
     }
 
     return output;
 }
 
-int Quickhull3D::nextVertex()
+std::pair<QFace*, int> Quickhull3D::nextVertex()
 {
     if (assigned_.empty()) {
-        return -1;
+        return {NULL, -1};
     }
     // find face of top point
     QFace * face = assigned_.begin() -> second;
@@ -64,7 +65,20 @@ int Quickhull3D::nextVertex()
         }
     }
 
-    return nxt;
+    return {face, nxt};
+}
+
+void Quickhull3D::processVertex(QFace * face, unsigned index)
+{
+    unassign(index);
+    std::vector<QHalfEdge*> horizon;
+    findHorizon((*globIn_)[index], face, NULL, horizon);
+}
+
+void Quickhull3D::findHorizon(const point_t& of, QFace * on, QHalfEdge * through,
+                              std::vector<QHalfEdge*>& horizon)
+{
+
 }
 
 void Quickhull3D::findInitial(const data_t& input)
@@ -209,8 +223,16 @@ void Quickhull3D::findInitial(const data_t& input)
 
 void Quickhull3D::assign(unsigned vertexID, unsigned faceID)
 {
+    R("ASSIGN " << vertexID);
     assigned_[vertexID] = &(faces_[faceID]);
     faces_[faceID].assigned_.insert(vertexID);
+}
+
+void Quickhull3D::unassign(unsigned vertexID)
+{
+    R("UNASSIGN " << vertexID);
+    assigned_[vertexID] -> assigned_.erase(vertexID);
+    assigned_.erase(vertexID);
 }
 
 }
