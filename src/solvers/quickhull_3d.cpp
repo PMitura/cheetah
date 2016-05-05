@@ -33,14 +33,16 @@ Polyhedron& Quickhull3D::solveSequential(const Points3D& input,
     const data_t& idata = input.getData();
     globIn_ = &idata;
     faces_.clear();
+    assigned_.clear();
+    orphans_.clear();
 
     findInitial(idata);
     // iterate over faces until done
     while (1) {
-        if (assigned_.empty()) {
+        std::pair<QFace*, int> eyePoint = nextVertex();
+        if (eyePoint.second == -1) {
             break;
         }
-        std::pair<QFace*, int> eyePoint = nextVertex();
         processVertex(eyePoint.first, eyePoint.second);
     }
 
@@ -70,15 +72,43 @@ std::pair<QFace*, int> Quickhull3D::nextVertex()
 
 void Quickhull3D::processVertex(QFace * face, unsigned index)
 {
+    point_t eyePoint = (*globIn_)[index];
     unassign(index);
+
     std::vector<QHalfEdge*> horizon;
-    findHorizon((*globIn_)[index], face, NULL, horizon);
+    findHorizon(eyePoint, face, NULL, horizon);
+
+    std::vector<QFace*> addedFaces;
+    // TODO updateFaces(eyePoint, horizon, addedFaces);
 }
 
 void Quickhull3D::findHorizon(const point_t& of, QFace * on, QHalfEdge * through,
                               std::vector<QHalfEdge*>& horizon)
 {
+    // free points from face we are looking at and close it
+    for (auto& i : on -> assigned_) {
+        orphans_.insert(i);
+    }
+    on -> assigned_.clear();
+    on -> state_ = QFace::CLOSED;
 
+    // pick next edge
+    QHalfEdge * curr = (!through) ? on -> edge_ : through,
+              * ori = curr;
+
+    // DFS iterate over edges
+    do {
+        QHalfEdge * twin = curr -> twin_;
+        QFace * twinFace = twin -> face_;
+        if (twinFace -> state_ == QFace::OPEN) {
+            if (visible(twinFace, of)) {
+                findHorizon(of, twinFace, twin, horizon);
+            } else {
+                horizon.push_back(curr);
+            }
+        }
+        curr = curr -> next_;
+    } while (curr != ori);
 }
 
 void Quickhull3D::findInitial(const data_t& input)

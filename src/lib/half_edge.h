@@ -41,7 +41,7 @@ struct QHalfEdge {
 };
 
 struct QFace {
-    QFace() : next_(NULL), prev_(NULL), edge_(NULL), state_(FRESH) {}
+    QFace() : next_(NULL), prev_(NULL), edge_(NULL), state_(OPEN) {}
     ~QFace();
     QFace * next_, * prev_;
     QHalfEdge * edge_;
@@ -49,7 +49,7 @@ struct QFace {
     point_t normal_, centroid_;
     double offset_;
 
-    enum State {FRESH, MERGED, CLOSED};
+    enum State {OPEN, MERGED, CLOSED};
     State state_;
 
     /** Initialize face as cyclic linked list of edges from vertices */
@@ -67,6 +67,11 @@ inline double distPlanePoint(const QFace * plane, const point_t& pt)
            + plane -> normal_[1] * pt[1]
            + plane -> normal_[2] * pt[2]
            - plane -> offset_;
+}
+
+inline bool visible(const QFace * plane, const point_t& pt)
+{
+    return distPlanePoint(plane, pt) > EPS;
 }
 
 }

@@ -52,20 +52,17 @@ class Quickhull3D : public Solver3D
         /** Opposite of assign */
         void unassign(unsigned vertexID);
 
-        /**
-         * Input data set made global
-         */
+        /** Input data set made global */
         const data_t* globIn_;
 
-        /**
-         * Global list of found faces in half-edge mesh structure
-         */
+        /** Global list of found faces in half-edge mesh structure */
         std::vector<QFace> faces_;
 
-        /**
-         * Global list of points assigned to some face
-         */
+        /** Global list of points assigned to some face */
         std::map<unsigned, QFace*> assigned_;
+
+        /** Unassigned points */
+        std::set<unsigned> orphans_;
 };
 
 }

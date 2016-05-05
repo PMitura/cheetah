@@ -3,7 +3,6 @@
 #include <cmath>
 #include <utility>
 
-#include "lib/half_edge.h"
 #include "lib/structures.h"
 
 namespace ch
