@@ -17,10 +17,8 @@ struct QHalfEdge;
 struct QFace;
 
 struct QVertex {
-    QVertex(point_t pt) : next_(NULL), prev_(NULL), edge_(NULL),
-                          assignedFace_(NULL), crds_(pt) {}
+    QVertex(point_t pt) : edge_(NULL), assignedFace_(NULL), crds_(pt) {}
     QVertex() : QVertex({0, 0, 0}) {}
-    QVertex * next_, * prev_;
     QHalfEdge * edge_;
     QFace * assignedFace_;
     point_t crds_;

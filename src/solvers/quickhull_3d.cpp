@@ -37,6 +37,7 @@ Polyhedron& Quickhull3D::solveSequential(const Points3D& input,
     orphans_.clear();
 
     findInitial(idata);
+
     // iterate over faces until done
     while (1) {
         std::pair<QFace*, int> eyePoint = nextVertex();
@@ -44,6 +45,18 @@ Polyhedron& Quickhull3D::solveSequential(const Points3D& input,
             break;
         }
         processVertex(eyePoint.first, eyePoint.second);
+    }
+
+    for (auto ptr : faces_) {
+        Points3D facePts;
+        QHalfEdge * edge = ptr -> edge_,
+                  * ori  = edge;
+        do {
+            facePts.add(edge -> head_ -> crds_);
+            edge = edge -> next_;
+        } while (edge != ori);
+        delete ptr;
+        output.addFace(facePts);
     }
 
     return output;
@@ -56,6 +69,7 @@ std::pair<QFace*, int> Quickhull3D::nextVertex()
     }
     // find face of top point
     QFace * face = assigned_.begin() -> second;
+    R("NEXT TOP " << assigned_.begin() -> first);
     int nxt = -1;
     double maxDist = 0, dd;
     // iterate over points assigned to that face
@@ -80,14 +94,31 @@ void Quickhull3D::processVertex(QFace * face, unsigned index)
 
     std::vector<QFace*> addedFaces;
     updateFaces(eyePoint, horizon, addedFaces);
+
+    assignOrphans(addedFaces);
+}
+
+void Quickhull3D::assignOrphans(std::vector<QFace*>& candidates)
+{
+
 }
 
 void Quickhull3D::updateFaces(const point_t& eye,
-        std::vector<QHalfEdge*>& horizon, std::vector<QFace*> added)
+        std::vector<QHalfEdge*>& horizon, std::vector<QFace*>& added)
 {
+    QHalfEdge * pre = NULL, * ori = NULL;
     for (auto& edge : horizon) {
         QHalfEdge * lateral = newFaceFromEdge(eye, edge);
+        added.push_back(lateral -> face_);
+        // check if found lateral edges of previous circular face
+        if (pre == NULL) {
+            ori = lateral;
+        } else {
+            ori -> next_ -> pairWith(pre);
+        }
+        pre = lateral;
     }
+    ori -> next_ -> pairWith(pre);
 }
 
 QHalfEdge * Quickhull3D::newFaceFromEdge(const point_t& eye, QHalfEdge * edge)
@@ -95,10 +126,10 @@ QHalfEdge * Quickhull3D::newFaceFromEdge(const point_t& eye, QHalfEdge * edge)
     // triangle forming the face
     std::vector<QVertex> faceVertices = {eye, *(edge -> head_),
                                          *(edge -> prev_ -> head_)};
-    faces_.push_back(QFace());
-    faces_.back().init(faceVertices);
-    QHalfEdge * faceEdge = faces_.back().edge_;
-    faceEdge -> prev_ -> twin_ = edge -> twin_;
+    faces_.push_back(new QFace());
+    faces_.back() -> init(faceVertices);
+    QHalfEdge * faceEdge = faces_.back() -> edge_;
+    faceEdge -> prev_ -> pairWith(edge -> twin_);
     return faceEdge;
 }
 
@@ -113,8 +144,17 @@ void Quickhull3D::findHorizon(const point_t& of, QFace * on, QHalfEdge * through
     on -> state_ = QFace::CLOSED;
 
     // pick next edge
+    /*
     QHalfEdge * curr = (!through) ? on -> edge_ : through,
               * ori = curr;
+    */
+    QHalfEdge * curr, * ori = through;
+    if (ori == NULL) {
+        ori = on -> edge_;
+        curr = ori;
+    } else {
+        curr = ori -> next_;
+    }
 
     // DFS iterate over edges
     do {
@@ -207,45 +247,46 @@ void Quickhull3D::findInitial(const data_t& input)
         return;
     }
     QVertex d(input[didx]);
+    R("INITIAL " << aidx << ", " << bidx << ", " << cidx << ", " << didx);
 
     // find out orientation of found tetrahedron and initialize half edge mesh
     // represented polyhedron accordingly
     for (int i = 0; i < 4; i++) {
-        faces_.push_back(QFace());
+        faces_.push_back(new QFace());
     }
     std::vector<QVertex> used;
     if (dot(d.crds_, abcNorm) - base < -EPS) {
         used = {a, b, c};
-        faces_[0].init(used);
+        faces_[0] -> init(used);
         used = {d, b, a};
-        faces_[1].init(used);
+        faces_[1] -> init(used);
         used = {d, c, b};
-        faces_[2].init(used);
+        faces_[2] -> init(used);
         used = {d, a, c};
-        faces_[3].init(used);
+        faces_[3] -> init(used);
 
-        faces_[1].edgeAt(1) -> pairWith(faces_[2].edgeAt(0));
-        faces_[1].edgeAt(2) -> pairWith(faces_[0].edgeAt(1));
-        faces_[2].edgeAt(1) -> pairWith(faces_[3].edgeAt(0));
-        faces_[2].edgeAt(2) -> pairWith(faces_[0].edgeAt(2));
-        faces_[3].edgeAt(1) -> pairWith(faces_[1].edgeAt(0));
-        faces_[3].edgeAt(2) -> pairWith(faces_[0].edgeAt(0));
+        faces_[1] -> edgeAt(1) -> pairWith(faces_[2] -> edgeAt(0));
+        faces_[1] -> edgeAt(2) -> pairWith(faces_[0] -> edgeAt(1));
+        faces_[2] -> edgeAt(1) -> pairWith(faces_[3] -> edgeAt(0));
+        faces_[2] -> edgeAt(2) -> pairWith(faces_[0] -> edgeAt(2));
+        faces_[3] -> edgeAt(1) -> pairWith(faces_[1] -> edgeAt(0));
+        faces_[3] -> edgeAt(2) -> pairWith(faces_[0] -> edgeAt(0));
     } else {
         used = {a, c, b};
-        faces_[0].init(used);
+        faces_[0] -> init(used);
         used = {d, a, b};
-        faces_[1].init(used);
+        faces_[1] -> init(used);
         used = {d, b, c};
-        faces_[2].init(used);
+        faces_[2] -> init(used);
         used = {d, c, a};
-        faces_[3].init(used);
+        faces_[3] -> init(used);
 
-        faces_[1].edgeAt(0) -> pairWith(faces_[2].edgeAt(1));
-        faces_[1].edgeAt(2) -> pairWith(faces_[0].edgeAt(0));
-        faces_[2].edgeAt(0) -> pairWith(faces_[3].edgeAt(1));
-        faces_[2].edgeAt(2) -> pairWith(faces_[0].edgeAt(2));
-        faces_[3].edgeAt(0) -> pairWith(faces_[1].edgeAt(1));
-        faces_[3].edgeAt(2) -> pairWith(faces_[0].edgeAt(1));
+        faces_[1] -> edgeAt(0) -> pairWith(faces_[2] -> edgeAt(1));
+        faces_[1] -> edgeAt(2) -> pairWith(faces_[0] -> edgeAt(0));
+        faces_[2] -> edgeAt(0) -> pairWith(faces_[3] -> edgeAt(1));
+        faces_[2] -> edgeAt(2) -> pairWith(faces_[0] -> edgeAt(2));
+        faces_[3] -> edgeAt(0) -> pairWith(faces_[1] -> edgeAt(1));
+        faces_[3] -> edgeAt(2) -> pairWith(faces_[0] -> edgeAt(1));
     }
 
     // divide rest of the points under faces of tetrahedron
@@ -259,7 +300,7 @@ void Quickhull3D::findInitial(const data_t& input)
         maxDist = 0;
         int faceID = -1;
         for (int f = 0; f < 4; f++) {
-            dd = distPlanePoint(&(faces_[f]), input[i]);
+            dd = distPlanePoint(faces_[f], input[i]);
             if (dd > maxDist + EPS) {
                 faceID = f;
                 maxDist = dd;
@@ -274,8 +315,8 @@ void Quickhull3D::findInitial(const data_t& input)
 void Quickhull3D::assign(unsigned vertexID, unsigned faceID)
 {
     R("ASSIGN " << vertexID);
-    assigned_[vertexID] = &(faces_[faceID]);
-    faces_[faceID].assigned_.insert(vertexID);
+    assigned_[vertexID] = faces_[faceID];
+    faces_[faceID] -> assigned_.insert(vertexID);
 }
 
 void Quickhull3D::unassign(unsigned vertexID)

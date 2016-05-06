@@ -36,9 +36,12 @@ class Quickhull3D : public Solver3D
         /** Processes given vertex, adding it to partial hull */
         void processVertex(QFace * face, unsigned index);
 
+        /** Assign orphaned points to new candidate faces */
+        void assignOrphans(std::vector<QFace*>& candidates);
+
         /** Updates faces according to found horizon */
         void updateFaces(const point_t& eye, std::vector<QHalfEdge*>& horizon,
-                std::vector<QFace*> added);
+                std::vector<QFace*>& added);
 
         /** creates new face from given eyepoint and horizon edge */
         QHalfEdge * newFaceFromEdge(const point_t& eye, QHalfEdge * edge);
@@ -66,7 +69,7 @@ class Quickhull3D : public Solver3D
         const data_t* globIn_;
 
         /** Global list of found faces in half-edge mesh structure */
-        std::vector<QFace> faces_;
+        std::vector<QFace*> faces_;
 
         /** Global list of points assigned to some face */
         std::map<unsigned, QFace*> assigned_;

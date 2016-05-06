@@ -30,15 +30,17 @@ void QFace::init(std::vector<QVertex>& vertices)
 {
     // cannot initalize with less than 3 vertices
     if (vertices.size() < 3) {
-        return; // should never happen
+        R("Failed face initialization")
+        return; // shouldn't be ever called
     }
 
-    // initialize edges
+    // initialize edges in a circular linked list
     QHalfEdge * prev = NULL;
     for (auto& v : vertices) {
         QHalfEdge * curr = new QHalfEdge();
         curr -> face_ = this;
-        curr -> head_ = new QVertex(v);
+        curr -> head_ = new QVertex(v.crds_);
+        curr -> head_ -> edge_ = curr;
         if (prev == NULL) {
             edge_ = curr;
         } else {
@@ -47,10 +49,8 @@ void QFace::init(std::vector<QVertex>& vertices)
         }
         prev = curr;
     }
-    if (edge_ != NULL) {
-        prev -> next_ = edge_;
-        edge_ -> prev_ = prev;
-    }
+    prev -> next_ = edge_;
+    edge_ -> prev_ = prev;
 
     // find normal vector of face plane
     QHalfEdge * e1 = edge_ -> next_, * e2 = e1 -> next_;
@@ -83,6 +83,7 @@ void QFace::init(std::vector<QVertex>& vertices)
         centroid_[0] += curr -> head_ -> crds_[0];
         centroid_[1] += curr -> head_ -> crds_[1];
         centroid_[2] += curr -> head_ -> crds_[2];
+        curr = curr -> next_;
     } while (curr != edge_);
     centroid_[0] /= vertices.size();
     centroid_[1] /= vertices.size();
