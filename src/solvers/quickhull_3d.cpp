@@ -79,7 +79,27 @@ void Quickhull3D::processVertex(QFace * face, unsigned index)
     findHorizon(eyePoint, face, NULL, horizon);
 
     std::vector<QFace*> addedFaces;
-    // TODO updateFaces(eyePoint, horizon, addedFaces);
+    updateFaces(eyePoint, horizon, addedFaces);
+}
+
+void Quickhull3D::updateFaces(const point_t& eye,
+        std::vector<QHalfEdge*>& horizon, std::vector<QFace*> added)
+{
+    for (auto& edge : horizon) {
+        QHalfEdge * lateral = newFaceFromEdge(eye, edge);
+    }
+}
+
+QHalfEdge * Quickhull3D::newFaceFromEdge(const point_t& eye, QHalfEdge * edge)
+{
+    // triangle forming the face
+    std::vector<QVertex> faceVertices = {eye, *(edge -> head_),
+                                         *(edge -> prev_ -> head_)};
+    faces_.push_back(QFace());
+    faces_.back().init(faceVertices);
+    QHalfEdge * faceEdge = faces_.back().edge_;
+    faceEdge -> prev_ -> twin_ = edge -> twin_;
+    return faceEdge;
 }
 
 void Quickhull3D::findHorizon(const point_t& of, QFace * on, QHalfEdge * through,

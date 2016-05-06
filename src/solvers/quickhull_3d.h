@@ -36,6 +36,16 @@ class Quickhull3D : public Solver3D
         /** Processes given vertex, adding it to partial hull */
         void processVertex(QFace * face, unsigned index);
 
+        /** Updates faces according to found horizon */
+        void updateFaces(const point_t& eye, std::vector<QHalfEdge*>& horizon,
+                std::vector<QFace*> added);
+
+        /** creates new face from given eyepoint and horizon edge */
+        QHalfEdge * newFaceFromEdge(const point_t& eye, QHalfEdge * edge);
+
+        /**
+         * Finds closed list of edges forming horizon visible from given point
+         */
         void findHorizon(const point_t& of, QFace * on, QHalfEdge * through,
                          std::vector<QHalfEdge*>& horizon);
         /** 
