@@ -16,6 +16,11 @@ class JarvisScan2D : public Solver2D
 
         Points2D& solve(const Points2D& input, Points2D& output);
 
+        /** Algorithm version switcher */
+        enum Variant {CROSS, POLAR, PARA};
+        JarvisScan2D(Variant v);
+        inline void setVariant(Variant v) { variant_ = v; }
+
     private:
         Points2D& solveCross(const Points2D& input, Points2D& output);
         Points2D& solvePolar(const Points2D& input, Points2D& output);
@@ -23,6 +28,8 @@ class JarvisScan2D : public Solver2D
 
         void scan(const data_t& input, data_t& output,
                   unsigned beginIdx, unsigned endIdx);
+
+        Variant variant_;
 };
 
 }

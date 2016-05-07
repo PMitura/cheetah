@@ -6,18 +6,33 @@ namespace ch
 JarvisScan2D::JarvisScan2D()
 {
     name_ = "Jarvis Scan";
+    variant_ = CROSS;
 }
+
+JarvisScan2D::JarvisScan2D(Variant v)
+{
+    name_ = "Jarvis Scan";
+    variant_ = v;
+}
+
 
 Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
 {
-    // return solvePolar(input, output);
-    // return solveCross(input, output); // faster!
-    return solvePara(input, output);
+    switch (variant_) {
+        case POLAR:
+            return solvePolar(input, output);
+        case CROSS:
+            return solveCross(input, output);
+        case PARA:
+            return solvePara(input, output);
+    }
+    // should never happen
+    return solveCross(input, output);
 }
 
 Points2D& JarvisScan2D::solveCross(const Points2D& input, Points2D& output)
 {
-    if (input.getSize() <= 1) {
+    if (input.getSize() <= 2) {
         output = input;
         return output;
     }
@@ -72,7 +87,7 @@ Points2D& JarvisScan2D::solveCross(const Points2D& input, Points2D& output)
                          inputData[nextIndex][1])) {
                     nextIndex = i;
                 }
-            } else if (o == 1) {
+            } else if (o == 2) {
                 // point to the left of current hull face
                 nextIndex = i;
             }

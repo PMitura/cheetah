@@ -75,18 +75,16 @@ class PerfTest
         void runTestInstance(Instance& inst, std::vector<Solver2D*> solvers);
 
         /**
-         * Generates, runs, and measures of single problem instance.
+         * Runs, and measures single problem instance.
          *
          * Time to generate data is not counted.
          *
-         * @param n size of data set
          * @param h target number of points on hull
-         * @param span contraints on input set coordinates
+         * @param input set of points to solve
          * @param solver solver to use
          * @return execution time of solver
          */
-        double runGeneratedTest(unsigned n, unsigned h, double span, 
-                                Solver2D& solver);
+        double runGeneratedTest(int h, Points2D& input, Solver2D& solver);
 
         /**
          * Runs single test with specified input.

@@ -6,12 +6,19 @@ namespace ch
 GrahamScan2D::GrahamScan2D()
 {
     name_ = "Graham Scan";
+    variant_ = PRECOMP;
+}
+
+GrahamScan2D::GrahamScan2D(Variant v)
+{
+    name_ = "Graham Scan";
+    variant_ = v;
 }
 
 Points2D& GrahamScan2D::solve(const Points2D& input, Points2D& output)
 {
-    // return solveSequential(input, output);
-    return solveParallel(input, output);
+    return solveSequential(input, output);
+    // return solveParallel(input, output);
 }
 
 Points2D& GrahamScan2D::solveSequential(const Points2D& input,
@@ -191,7 +198,7 @@ bool GrahamScan2D::AngleCmp::operator()(const unsigned& a, const unsigned& b)
                < dist({data_[part_.pivot_][0], data_[part_.pivot_][1]},
                         {data_[b][0], data_[b][1]});
     }
-    return x < EPS;
+    return x > EPS;
 }
 
 

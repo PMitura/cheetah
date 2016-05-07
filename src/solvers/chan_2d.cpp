@@ -6,11 +6,31 @@ namespace ch
 Chan2D::Chan2D()
 {
     name_ = "Chan";
+    variant_ = QUICK;
+}
+
+Chan2D::Chan2D(Variant v)
+{
+    name_ = "Chan";
+    variant_ = v;
 }
 
 Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
 {
-    return solveNaive(input, output);
+    switch (variant_) {
+        case JARVIS:
+            solver_ = new JarvisScan2D();
+            break;
+        case GRAHAM:
+            solver_ = new GrahamScan2D();
+            break;
+        case QUICK:
+            solver_ = new Quickhull2D();
+            break;
+    }
+    solveNaive(input, output);
+    delete solver_;
+    return output;
 }
 
 Points2D& Chan2D::solveNaive(const Points2D& input, Points2D& output)
@@ -57,12 +77,11 @@ void Chan2D::findHulls(const Points2D& input, std::vector<Points2D>& hulls,
     const data_t& inputData = input.getData();
     for (unsigned i = 0; i < input.getSize(); i += step) {
         Points2D part;
-        GrahamScan2D solver;
         for (unsigned j = i; j < std::min(i + step, input.getSize()); j++) {
             part.add(inputData[j]);
         }
         hulls.push_back(Points2D());
-        solver.solve(part, hulls.back());
+        solver_ -> solve(part, hulls.back());
     }
 }
 
@@ -87,7 +106,7 @@ std::pair<unsigned, unsigned> Chan2D::findNext(std::vector<Points2D>& hulls,
                             candP[0], candP[1],
                             propP[0], propP[1]);
 
-        if (o == 2) {
+        if (o == 1) {
             // right turn
             cand = {tgt, sub};
             candP = propP;

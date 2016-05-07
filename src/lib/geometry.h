@@ -8,7 +8,7 @@
 namespace ch
 {
 
-const double EPS = 1e-12;
+const double EPS = 1e-6;
 const double PI  = 3.141592653589793238462643383279;
 
 /** computes angle of line segment ab and x axis */
@@ -169,7 +169,7 @@ inline bool ccw(const double& ax, const double& ay,
                 const double& bx, const double& by,
                 const double& cx, const double& cy)
 {
-    return ((ax - bx) * (by - cy) - (ay - by) * (bx - cx)) > EPS;
+    return ((ax - bx) * (by - cy) - (ay - by) * (bx - cx)) < -EPS;
 }
 inline bool ccw(const point_t& a,
                 const point_t& b,

@@ -24,6 +24,10 @@ class GrahamScan2D : public Solver2D
 
         Points2D& solveParallel(const Points2D& input, Points2D& output);
 
+        /** Version switcher */
+        enum Variant {POLAR, CROSS, PRECOMP, PARA};
+        GrahamScan2D(Variant v);
+
         /** same as solve, but returns ids of found points */
         void solveID(const Points2D& input, std::vector<unsigned>& ids);
 
@@ -57,6 +61,8 @@ class GrahamScan2D : public Solver2D
             const GrahamScan2D& part_;
             const data_t& data_;
         };
+
+        Variant variant_;
 };
 
 }

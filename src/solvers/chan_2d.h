@@ -20,6 +20,9 @@ class Chan2D : public Solver2D
         Chan2D();
         Points2D& solve(const Points2D& input, Points2D& output);
 
+        enum Variant {JARVIS, GRAHAM, QUICK};
+        Chan2D(Variant v);
+
     private:
         inline unsigned ppow(unsigned x) { return 1U << (1U << x); }
         Points2D& solveNaive(const Points2D& input, Points2D& output);
@@ -55,6 +58,9 @@ class Chan2D : public Solver2D
          * @return id of found point on its subhull
          */
         unsigned findTangent(const Points2D& hull, point_t& p);
+
+        Variant variant_;
+        Solver2D* solver_;
 };
 
 }
