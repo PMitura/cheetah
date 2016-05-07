@@ -28,8 +28,8 @@ struct QVertex {
 };
 
 struct QHalfEdge {
-    QHalfEdge() : head_(NULL), twin_(NULL), prev_(NULL), next_(NULL),
-                  face_(NULL) {}
+    QHalfEdge(QFace * face) : head_(NULL), twin_(NULL), prev_(NULL), 
+                              next_(NULL), face_(face) {}
     QVertex * head_;
     QHalfEdge * twin_, * prev_, * next_;
     QFace * face_;
@@ -44,13 +44,19 @@ struct QFace {
     QHalfEdge * edge_;
     std::set<unsigned> assigned_;
     point_t normal_, centroid_;
-    double offset_;
+    double offset_, area_;
 
     enum State {OPEN, MERGED, CLOSED};
     State state_;
 
     /** Initialize face as cyclic linked list of edges from vertices */
     void init(std::vector<QVertex>& vertices);
+
+    /** Computes offset, area and cetroid */
+    void updateAttributes();
+
+    /** Returns number of vertices on perimeter */
+    int getVerticesCount();
 
     /** Get n-th edge on a face */
     QHalfEdge * edgeAt(unsigned pos);
@@ -68,7 +74,7 @@ inline double distPlanePoint(const QFace * plane, const point_t& pt)
 
 inline bool visible(const QFace * plane, const point_t& pt)
 {
-    return distPlanePoint(plane, pt) > EPS;
+    return distPlanePoint(plane, pt) > 1e-6;
 }
 
 }

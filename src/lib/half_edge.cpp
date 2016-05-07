@@ -37,8 +37,7 @@ void QFace::init(std::vector<QVertex>& vertices)
     // initialize edges in a circular linked list
     QHalfEdge * prev = NULL;
     for (auto& v : vertices) {
-        QHalfEdge * curr = new QHalfEdge();
-        curr -> face_ = this;
+        QHalfEdge * curr = new QHalfEdge(this);
         curr -> head_ = new QVertex(v.crds_);
         curr -> head_ -> edge_ = curr;
         if (prev == NULL) {
@@ -52,6 +51,11 @@ void QFace::init(std::vector<QVertex>& vertices)
     prev -> next_ = edge_;
     edge_ -> prev_ = prev;
 
+    updateAttributes();
+}
+
+void QFace::updateAttributes()
+{
     // find normal vector of face plane
     QHalfEdge * e1 = edge_ -> next_, * e2 = e1 -> next_;
     point_t pt0 = edge_ -> head_ -> crds_,
@@ -71,10 +75,10 @@ void QFace::init(std::vector<QVertex>& vertices)
         e1 = e2;
         e2 = e2 -> next_;
     }
-    double scaleFactor = vectLen3d(normal_);
-    normal_[0] /= scaleFactor;
-    normal_[1] /= scaleFactor;
-    normal_[2] /= scaleFactor;
+    area_ = vectLen3d(normal_);
+    normal_[0] /= area_;
+    normal_[1] /= area_;
+    normal_[2] /= area_;
 
     // find centroid of face
     centroid_ = {0, 0, 0};
@@ -85,12 +89,24 @@ void QFace::init(std::vector<QVertex>& vertices)
         centroid_[2] += curr -> head_ -> crds_[2];
         curr = curr -> next_;
     } while (curr != edge_);
-    centroid_[0] /= vertices.size();
-    centroid_[1] /= vertices.size();
-    centroid_[2] /= vertices.size();
+    int s = getVerticesCount();
+    centroid_[0] /= s;
+    centroid_[1] /= s;
+    centroid_[2] /= s;
 
     // set plane dot product offset
     offset_ = dot(normal_, centroid_);
+}
+
+int QFace::getVerticesCount()
+{
+    int cnt = 0;
+    QHalfEdge * curr = edge_, * ori = curr;
+    do {
+        edge_ = edge_ -> next_;
+        cnt++;
+    } while (curr != ori);
+    return cnt;
 }
 
 QHalfEdge * QFace::edgeAt(unsigned pos)
