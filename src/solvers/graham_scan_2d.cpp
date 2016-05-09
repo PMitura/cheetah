@@ -136,24 +136,24 @@ unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
     ptStack[0] = order_[0];
     ptStack[1] = order_[1];
     while (iPtr < iSize) {
-        if (ccw(inputData[ptStack[0]][0],
-                inputData[ptStack[0]][1],
-                inputData[ptStack[1]][0],
-                inputData[ptStack[1]][1],
-                inputData[order_[iPtr]][0],
-                inputData[order_[iPtr]][1])) {
+        if (cw(inputData[ptStack[0]][0],
+               inputData[ptStack[0]][1],
+               inputData[ptStack[1]][0],
+               inputData[ptStack[1]][1],
+               inputData[order_[iPtr]][0],
+               inputData[order_[iPtr]][1])) {
             break;
         }
         ptStack[1] = order_[iPtr++];
     }
 
     while (iPtr < iSize) {
-        if (ccw(inputData[ptStack[sPtr - 2]][0],
-                inputData[ptStack[sPtr - 2]][1],
-                inputData[ptStack[sPtr - 1]][0],
-                inputData[ptStack[sPtr - 1]][1],
-                inputData[order_[iPtr]][0],
-                inputData[order_[iPtr]][1])) {
+        if (cw(inputData[ptStack[sPtr - 2]][0],
+               inputData[ptStack[sPtr - 2]][1],
+               inputData[ptStack[sPtr - 1]][0],
+               inputData[ptStack[sPtr - 1]][1],
+               inputData[order_[iPtr]][0],
+               inputData[order_[iPtr]][1])) {
             ptStack[sPtr++] = order_[iPtr++];
         } else {
             sPtr--;
@@ -162,12 +162,12 @@ unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
 
     // handle last point collinear with first
     if (sPtr >= 3) {
-        if (ccw(inputData[ptStack[sPtr - 2]][0],
-                inputData[ptStack[sPtr - 2]][1],
-                inputData[ptStack[sPtr - 1]][0],
-                inputData[ptStack[sPtr - 1]][1],
-                inputData[order_[0]][0],
-                inputData[order_[0]][1]) == 0) {
+        if (cw(inputData[ptStack[sPtr - 2]][0],
+               inputData[ptStack[sPtr - 2]][1],
+               inputData[ptStack[sPtr - 1]][0],
+               inputData[ptStack[sPtr - 1]][1],
+               inputData[order_[0]][0],
+               inputData[order_[0]][1]) == 0) {
             sPtr--;
         }
     }
@@ -198,7 +198,7 @@ bool GrahamScan2D::AngleCmp::operator()(const unsigned& a, const unsigned& b)
                < dist({data_[part_.pivot_][0], data_[part_.pivot_][1]},
                         {data_[b][0], data_[b][1]});
     }
-    return x > EPS;
+    return x < EPS;
 }
 
 

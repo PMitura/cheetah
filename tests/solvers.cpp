@@ -56,25 +56,25 @@ void testSingleFile(const std::string& filename,
 void testSolverPremade2D(ch::Solver2D& solver)
 {
     // 8 integer points, 5 on hull
-    // testSingleFile("tests/files/basic1.in", solver, 5);
+    testSingleFile("tests/files/basic1.in", solver, 5);
 
     // 500 random points, real coords <-100, 100>, 10 on hull
-    // testSingleFile("tests/files/basic2.in", solver, 10);
+    testSingleFile("tests/files/basic2.in", solver, 10);
 
     // 1000 random points, real coords <-0.5, 0.5>, 12 on hull
-    // testSingleFile("tests/files/basic3.in", solver, 12);
+    testSingleFile("tests/files/basic3.in", solver, 12);
 
     // 10000 random points, real coords <-1000, 1000>, 18 on hull
-    // testSingleFile("tests/files/basic4.in", solver, 18);
+    testSingleFile("tests/files/basic4.in", solver, 18);
 
     // 6 integer points on line
-    // testSingleFile("tests/files/line.in", solver, 2);
+    testSingleFile("tests/files/line.in", solver, 2);
 
     // single point
-    // testSingleFile("tests/files/single.in", solver, 1);
+    testSingleFile("tests/files/single.in", solver, 1);
 
     // diamond
-    // testSingleFile("tests/files/diamond.in", solver, 4);
+    testSingleFile("tests/files/diamond.in", solver, 4);
 
     // hexagon
     testSingleFile("tests/files/hexagon.in", solver, 6);

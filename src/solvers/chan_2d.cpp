@@ -6,7 +6,7 @@ namespace ch
 Chan2D::Chan2D()
 {
     name_ = "Chan";
-    variant_ = QUICK;
+    variant_ = GRAHAM;
 }
 
 Chan2D::Chan2D(Variant v)
@@ -21,6 +21,7 @@ Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
         case JARVIS:
             solver_ = new JarvisScan2D();
             break;
+        case COMBO:
         case GRAHAM:
             solver_ = new GrahamScan2D();
             break;
@@ -28,6 +29,7 @@ Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
             solver_ = new Quickhull2D();
             break;
     }
+    comboFlag_ = 0;
     solveNaive(input, output);
     delete solver_;
     return output;
@@ -75,6 +77,11 @@ void Chan2D::findHulls(const Points2D& input, std::vector<Points2D>& hulls,
                        unsigned step)
 {
     const data_t& inputData = input.getData();
+    if (variant_ == COMBO && step > 500 && !comboFlag_) {
+        comboFlag_ = 1;
+        delete solver_;
+        solver_ = new Quickhull2D();
+    }
     for (unsigned i = 0; i < input.getSize(); i += step) {
         Points2D part;
         for (unsigned j = i; j < std::min(i + step, input.getSize()); j++) {
@@ -106,7 +113,7 @@ std::pair<unsigned, unsigned> Chan2D::findNext(std::vector<Points2D>& hulls,
                             candP[0], candP[1],
                             propP[0], propP[1]);
 
-        if (o == 1) {
+        if (o == 2) {
             // right turn
             cand = {tgt, sub};
             candP = propP;

@@ -8,7 +8,7 @@
 namespace ch
 {
 
-const double EPS = 1e-6;
+const double EPS = 1e-12;
 const double PI  = 3.141592653589793238462643383279;
 
 /** computes angle of line segment ab and x axis */
@@ -127,7 +127,7 @@ inline int orientation(const double& ax, const double& ay,
     double cross = (ax - bx) * (by - cy) - (ay - by) * (bx - cx);
 
     if (fabs(cross) < EPS) return 0;  // collinear
-    return (cross > EPS) ? 1 : 2; // counter-clockwise or clockwise
+    return (cross > EPS) ? 1 : 2; // clockwise or ccw
 }
 
 /** Length of a 3d vector */
@@ -171,12 +171,18 @@ inline bool ccw(const double& ax, const double& ay,
 {
     return ((ax - bx) * (by - cy) - (ay - by) * (bx - cx)) < -EPS;
 }
+inline bool cw(const double& ax, const double& ay,
+                const double& bx, const double& by,
+                const double& cx, const double& cy)
+{
+    return ((ax - bx) * (by - cy) - (ay - by) * (bx - cx)) > EPS;
+}
 inline bool ccw(const point_t& a,
                 const point_t& b,
                 const point_t& c)
 {
     return  ((a[0] - b[0]) * (b[1] - c[1])
-           - (a[1] - b[1]) * (b[0] - c[0])) > EPS;
+           - (a[1] - b[1]) * (b[0] - c[0])) < -EPS;
 }
 
 /** finds out if point is in triangle */

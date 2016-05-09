@@ -7,16 +7,20 @@ void PerfTest::runAllTests()
 {
     // initialize tested solvers
     std::vector<Solver2D*> solvers;
-    // solvers.push_back(new GrahamScan2D());
     // solvers.push_back(new MonotoneChain2D());
-    // solvers.push_back(new Quickhull2D());
     
     // solvers.push_back(new JarvisScan2D(JarvisScan2D::POLAR));
-    // solvers.push_back(new JarvisScan2D(JarvisScan2D::CROSS));
+    solvers.push_back(new JarvisScan2D(JarvisScan2D::CROSS));
+
+    solvers.push_back(new GrahamScan2D());
     
-    solvers.push_back(new Quickhull2D(Quickhull2D::NAIVE));
-    solvers.push_back(new Quickhull2D(Quickhull2D::PRECOMP));
+    // solvers.push_back(new Quickhull2D(Quickhull2D::NAIVE));
+    // solvers.push_back(new Quickhull2D(Quickhull2D::PRECOMP));
     solvers.push_back(new Quickhull2D(Quickhull2D::FORWARD));
+    
+    // solvers.push_back(new Chan2D(Chan2D::GRAHAM));
+    // solvers.push_back(new Chan2D(Chan2D::QUICK));
+    // solvers.push_back(new Chan2D(Chan2D::COMBO));
     
     // solvers.push_back(new Chan2D());
 
@@ -58,20 +62,27 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     // test block instance
     std::vector<Instance> instances;
 
-    for (int i = 0; i <= 15000000; i += 250000) {
-        instances.push_back({i, std::min(i, 50), 1, 1000});
-    }
+    instances.push_back({4, 4, 1000000, 1000});
+    instances.push_back({16, 4, 1000000, 1000});
 
     /*
-    instances.push_back({5000000, 3,     1, 1000});
-    instances.push_back({5000000, 10,    1, 1000});
-    instances.push_back({5000000, 50,    1, 1000});
-    instances.push_back({5000000, 100,   1, 1000});
-    instances.push_back({5000000, 500,   1, 1000});
-    instances.push_back({5000000, 1000,  1, 1000});
-    instances.push_back({5000000, 5000,  1, 1000});
-    instances.push_back({5000000, 10000, 1, 1000});
-    instances.push_back({5000000, 20000, 1, 1000});
+    for (int i = 0; i <= 1000; i += 50) {
+        instances.push_back({i, std::min(i, 50), 50000, 1000});
+    }
+    */
+
+    /*
+    instances.push_back({10000000, 3,     1, 1000});
+    instances.push_back({10000000, 10,    1, 1000});
+    instances.push_back({10000000, 25,    1, 1000});
+    instances.push_back({10000000, 50,    1, 1000});
+    instances.push_back({10000000, 100,   1, 1000});
+    instances.push_back({10000000, 250,   1, 1000});
+    instances.push_back({10000000, 500,   1, 1000});
+    instances.push_back({10000000, 1000,  1, 1000});
+    instances.push_back({10000000, 5000,  1, 1000});
+    instances.push_back({10000000, 10000, 1, 1000});
+    instances.push_back({10000000, 20000, 1, 1000});
     */
 
     for (auto& inst : instances) {
@@ -91,6 +102,10 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
         std::cout << std::setw(15) << solver -> getName() << ": ";
         double timeSum = 0.0, currTime;
         int failed = 0;
+        if (solver -> getName() == "Jarvis Scan" && inst.h > 250) {
+            std::cout << 0 << " s" << std::endl;
+            continue;
+        }
         for (int i = 0; i < inst.runs; i++) {
             Points2D input;
             generator.genUniformCircle(inst.n, inst.h, inst.span, input);

@@ -20,7 +20,7 @@ class Chan2D : public Solver2D
         Chan2D();
         Points2D& solve(const Points2D& input, Points2D& output);
 
-        enum Variant {JARVIS, GRAHAM, QUICK};
+        enum Variant {JARVIS, GRAHAM, QUICK, COMBO};
         Chan2D(Variant v);
 
     private:
@@ -61,6 +61,7 @@ class Chan2D : public Solver2D
 
         Variant variant_;
         Solver2D* solver_;
+        bool comboFlag_;
 };
 
 }

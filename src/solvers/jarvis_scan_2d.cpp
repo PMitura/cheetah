@@ -280,8 +280,8 @@ void JarvisScan2D::scan(const data_t& input, data_t& output,
                                 input[currIdx][1],
                                 input[nextIdx][0],
                                 input[nextIdx][1],
-                                input[i        ][0],
-                                input[i        ][1]);
+                                input[i      ][0],
+                                input[i      ][1]);
 
             if (o == 0) {
                 // exclude collinear points
