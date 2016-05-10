@@ -25,7 +25,7 @@ class GrahamScan2D : public Solver2D
         Points2D& solveParallel(const Points2D& input, Points2D& output);
 
         /** Version switcher */
-        enum Variant {POLAR, CROSS, PRECOMP, PARA};
+        enum Variant {SEQ, PARA, PARA_STABLE, PARA_LIN, PARA_LIN_STABLE};
         GrahamScan2D(Variant v);
 
         /** same as solve, but returns ids of found points */
@@ -59,6 +59,13 @@ class GrahamScan2D : public Solver2D
                 : part_(p), data_(d) {}
             bool operator()(const unsigned& a, const unsigned& b);
             const GrahamScan2D& part_;
+            const data_t& data_;
+        };
+
+        struct yCmp {
+            yCmp(const data_t& d)
+                : data_(d) {}
+            bool operator()(const point_t& a, const point_t& b);
             const data_t& data_;
         };
 

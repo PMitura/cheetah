@@ -46,11 +46,11 @@ void PerfTest::runAllTests()
 void PerfTest::smallTests(std::vector<Solver2D*> solvers)
 {
     std::vector<Instance> instances;
-    instances.push_back({100 , 3,  25000, 1000});
-    instances.push_back({100 , 10, 25000, 1000});
-    instances.push_back({100 , 50, 25000, 1000});
-    instances.push_back({1000, 3,  10000, 1000});
-    instances.push_back({1000, 10, 10000, 1000});
+    instances.push_back({100 , 3,  25000, 1000, 1});
+    instances.push_back({100 , 10, 25000, 1000, 1});
+    instances.push_back({100 , 50, 25000, 1000, 1});
+    instances.push_back({1000, 3,  10000, 1000, 1});
+    instances.push_back({1000, 10, 10000, 1000, 1});
 
     for (auto& inst : instances) {
         runTestInstance(inst, solvers);
@@ -62,27 +62,27 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     // test block instance
     std::vector<Instance> instances;
 
-    instances.push_back({4, 4, 1000000, 1000});
-    instances.push_back({16, 4, 1000000, 1000});
+    instances.push_back({4, 4, 1000000, 1000, 1});
+    instances.push_back({16, 4, 1000000, 1000, 1});
 
     /*
     for (int i = 0; i <= 1000; i += 50) {
-        instances.push_back({i, std::min(i, 50), 50000, 1000});
+        instances.push_back({i, std::min(i, 50), 50000, 1000, 1});
     }
     */
 
     /*
-    instances.push_back({10000000, 3,     1, 1000});
-    instances.push_back({10000000, 10,    1, 1000});
-    instances.push_back({10000000, 25,    1, 1000});
-    instances.push_back({10000000, 50,    1, 1000});
-    instances.push_back({10000000, 100,   1, 1000});
-    instances.push_back({10000000, 250,   1, 1000});
-    instances.push_back({10000000, 500,   1, 1000});
-    instances.push_back({10000000, 1000,  1, 1000});
-    instances.push_back({10000000, 5000,  1, 1000});
-    instances.push_back({10000000, 10000, 1, 1000});
-    instances.push_back({10000000, 20000, 1, 1000});
+    instances.push_back({10000000, 3,     1, 1000, 1});
+    instances.push_back({10000000, 10,    1, 1000, 1});
+    instances.push_back({10000000, 25,    1, 1000, 1});
+    instances.push_back({10000000, 50,    1, 1000, 1});
+    instances.push_back({10000000, 100,   1, 1000, 1});
+    instances.push_back({10000000, 250,   1, 1000, 1});
+    instances.push_back({10000000, 500,   1, 1000, 1});
+    instances.push_back({10000000, 1000,  1, 1000, 1});
+    instances.push_back({10000000, 5000,  1, 1000, 1});
+    instances.push_back({10000000, 10000, 1, 1000, 1});
+    instances.push_back({10000000, 20000, 1, 1000, 1});
     */
 
     for (auto& inst : instances) {

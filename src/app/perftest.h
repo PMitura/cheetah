@@ -33,7 +33,7 @@ class PerfTest
     private:
         /** One instance of test run */
         struct Instance {
-            int n, h, runs;
+            int n, h, runs, cores;
             double span;
         };
 

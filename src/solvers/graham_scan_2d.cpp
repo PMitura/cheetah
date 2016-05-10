@@ -6,7 +6,7 @@ namespace ch
 GrahamScan2D::GrahamScan2D()
 {
     name_ = "Graham Scan";
-    variant_ = PRECOMP;
+    variant_ = PARA_LIN;
 }
 
 GrahamScan2D::GrahamScan2D(Variant v)
@@ -17,8 +17,13 @@ GrahamScan2D::GrahamScan2D(Variant v)
 
 Points2D& GrahamScan2D::solve(const Points2D& input, Points2D& output)
 {
-    return solveSequential(input, output);
-    // return solveParallel(input, output);
+    switch (variant_) {
+        case SEQ:
+            return solveSequential(input, output);
+            break;
+        default:
+            return solveParallel(input, output);
+    }
 }
 
 Points2D& GrahamScan2D::solveSequential(const Points2D& input,
@@ -107,15 +112,23 @@ void GrahamScan2D::solveID(const Points2D& input, std::vector<unsigned>& ids)
 int GrahamScan2D::findMinY(const data_t& points)
 {
     int minIndex = 0;
-    for (unsigned i = 1; i < points.size(); i++) {
-        double delta = points[minIndex][1] - points[i][1];
-        if (delta > EPS) {
-            minIndex = i;
-        } else if (fabs(delta) < EPS) {
-            if (points[minIndex][0] < points[i][0]) {
-                minIndex = i;
+    switch (variant_) {
+        case PARA_LIN:
+        case PARA_LIN_STABLE:
+            minIndex = __gnu_parallel::min_element(points.begin(),
+                    points.end(), yCmp(points)) - points.begin();
+            break;
+        default:
+            for (unsigned i = 1; i < points.size(); i++) {
+                double delta = points[minIndex][1] - points[i][1];
+                if (delta > EPS) {
+                    minIndex = i;
+                } else if (fabs(delta) < EPS) {
+                    if (points[minIndex][0] < points[i][0]) {
+                        minIndex = i;
+                    }
+                }
             }
-        }
     }
     return minIndex;
 }
@@ -185,8 +198,17 @@ void GrahamScan2D::sortPoints(const data_t& inputData)
 void GrahamScan2D::sortPointsParallel(const data_t& inputData)
 {
     computeAngles(inputData);
-    __gnu_parallel::stable_sort((order_.begin()) + 1, order_.end(),
-            AngleCmp(*this, inputData));
+    switch (variant_) {
+        case PARA_LIN_STABLE:
+        case PARA_STABLE:
+            __gnu_parallel::stable_sort((order_.begin()) + 1, order_.end(),
+                    AngleCmp(*this, inputData));
+            break;
+        default:
+            __gnu_parallel::sort((order_.begin()) + 1, order_.end(),
+                    AngleCmp(*this, inputData));
+            break;
+    }
 }
 
 bool GrahamScan2D::AngleCmp::operator()(const unsigned& a, const unsigned& b)
@@ -201,5 +223,17 @@ bool GrahamScan2D::AngleCmp::operator()(const unsigned& a, const unsigned& b)
     return x < EPS;
 }
 
+bool GrahamScan2D::yCmp::operator()(const point_t& a, const point_t& b)
+{
+    double delta = a[1] - b[1];
+    if (delta > EPS) {
+        return 0;
+    } else if (fabs(delta) < EPS) {
+        if (a[0] < b[0]) {
+            return 0;
+        }
+    }
+    return 1;
+}
 
 }
