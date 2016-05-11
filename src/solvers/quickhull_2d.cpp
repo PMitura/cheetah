@@ -8,7 +8,8 @@ Quickhull2D::Quickhull2D()
 {
     name_ = "Quickhull";
     EPS_LOC = 1e-6;
-    variant_ = FORWARD;
+    variant_ = PARA;
+    parallelThreshold_ = 100000;
 }
 
 Quickhull2D::Quickhull2D(Variant v)
@@ -17,6 +18,16 @@ Quickhull2D::Quickhull2D(Variant v)
     name_ = "Quickhull";
     EPS_LOC = 1e-6;
     variant_ = v;
+    parallelThreshold_ = 100000;
+}
+
+Quickhull2D::Quickhull2D(Variant v, int threshold)
+    :globIn_(NULL), globOut_(NULL)
+{
+    name_ = "Quickhull";
+    EPS_LOC = 1e-6;
+    variant_ = v;
+    parallelThreshold_ = threshold;
 }
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
@@ -545,11 +556,15 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
 #pragma omp sections
             {
 #pragma omp section
+                {
                 recParallel(a, c, (*globIn_)[acFar], acPlane, acPlane.size(),
                             acList);
+                }
 #pragma omp section
+                {
                 recParallel(c, b, (*globIn_)[cbFar], cbPlane, cbPlane.size(),
                             cbList);
+                }
             }
         }
     } else {
@@ -601,11 +616,17 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
     */
 
     // extended divide to planes
+
+    std::vector<double> crosses;
+    crosses.resize(input.getSize());
+#pragma omp parallel for default(shared) schedule(static)
     for (unsigned i = 0; i < inputData.size(); i++) {
-        // double o = partCross(inputData[i][0], inputData[i][1],
-        double o = cross(pivotLeft[0],    pivotLeft[1],
-                         pivotRight[0],   pivotRight[1],
-                         inputData[i][0], inputData[i][1]);
+        crosses[i] = cross(pivotLeft[0],    pivotLeft[1],
+                           pivotRight[0],   pivotRight[1],
+                           inputData[i][0], inputData[i][1]);
+    }
+    for (unsigned i = 0; i < inputData.size(); i++) {
+        double o = crosses[i];
         double oa = fabs(o);
         if (o < -EPS_LOC) {
             topPlane[topPtr++] = i;
@@ -629,6 +650,8 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
                 botPtr, botList);
                 */
 
+    omp_set_dynamic(1);
+    omp_set_nested(5);
 #pragma omp parallel
     {
 #pragma omp sections

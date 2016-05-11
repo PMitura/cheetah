@@ -21,12 +21,12 @@ Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
         case JARVIS:
             solver_ = new JarvisScan2D();
             break;
-        case COMBO:
-        case GRAHAM:
-            solver_ = new GrahamScan2D();
             break;
         case QUICK:
             solver_ = new Quickhull2D();
+            break;
+        default:
+            solver_ = new GrahamScan2D();
             break;
     }
     comboFlag_ = 0;

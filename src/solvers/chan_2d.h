@@ -20,7 +20,8 @@ class Chan2D : public Solver2D
         Chan2D();
         Points2D& solve(const Points2D& input, Points2D& output);
 
-        enum Variant {JARVIS, GRAHAM, QUICK, COMBO};
+        enum Variant {JARVIS, GRAHAM, QUICK, COMBO, PARA_ALGO, PARA_OVER,
+            PARA_COMBO};
         Chan2D(Variant v);
 
     private:
@@ -60,7 +61,10 @@ class Chan2D : public Solver2D
         unsigned findTangent(const Points2D& hull, point_t& p);
 
         Variant variant_;
+
+        /** Chosen solver for sub-hulls */
         Solver2D* solver_;
+        /** Flag marking change of solvers in combo variant */
         bool comboFlag_;
 };
 

@@ -10,22 +10,35 @@ void PerfTest::runAllTests()
     // solvers.push_back(new MonotoneChain2D());
     
     // solvers.push_back(new JarvisScan2D(JarvisScan2D::POLAR));
-    solvers.push_back(new JarvisScan2D(JarvisScan2D::CROSS));
+    // solvers.push_back(new JarvisScan2D(JarvisScan2D::CROSS));
 
-    solvers.push_back(new GrahamScan2D());
+    // solvers.push_back(new GrahamScan2D());
     
     // solvers.push_back(new Quickhull2D(Quickhull2D::NAIVE));
     // solvers.push_back(new Quickhull2D(Quickhull2D::PRECOMP));
-    solvers.push_back(new Quickhull2D(Quickhull2D::FORWARD));
+    // solvers.push_back(new Quickhull2D(Quickhull2D::FORWARD));
     
     // solvers.push_back(new Chan2D(Chan2D::GRAHAM));
     // solvers.push_back(new Chan2D(Chan2D::QUICK));
     // solvers.push_back(new Chan2D(Chan2D::COMBO));
     
-    // solvers.push_back(new Chan2D());
-
-    // setup parallelism
-    omp_set_num_threads(1);
+    // solvers.push_back(new GrahamScan2D(GrahamScan2D::SEQ));
+    // solvers.push_back(new GrahamScan2D(GrahamScan2D::PARA));
+    // solvers.push_back(new GrahamScan2D(GrahamScan2D::PARA_LIN));
+    // solvers.push_back(new GrahamScan2D(GrahamScan2D::PARA_STABLE));
+    // solvers.push_back(new GrahamScan2D(GrahamScan2D::PARA_LIN_STABLE));
+    
+    solvers.push_back(new JarvisScan2D(JarvisScan2D::CROSS));
+    solvers.push_back(new JarvisScan2D(JarvisScan2D::PARA));
+    solvers.push_back(new JarvisScan2D(JarvisScan2D::PARA_INT));
+    solvers.push_back(new JarvisScan2D(JarvisScan2D::PARA_DOUBLE));
+    
+    /*
+    solvers.push_back(new Quickhull2D(Quickhull2D::FORWARD));
+    for (int i = 1; i < 1000000; i *= 10) {
+        solvers.push_back(new Quickhull2D(Quickhull2D::PARA, i));
+    }
+    */
 
     // run tests
     // smallTests(solvers);
@@ -62,14 +75,20 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     // test block instance
     std::vector<Instance> instances;
 
-    instances.push_back({4, 4, 1000000, 1000, 1});
-    instances.push_back({16, 4, 1000000, 1000, 1});
-
     /*
     for (int i = 0; i <= 1000; i += 50) {
         instances.push_back({i, std::min(i, 50), 50000, 1000, 1});
     }
     */
+
+    instances.push_back({1000000, 100, 1, 1000, 1});
+    // instances.push_back({1000000, 100, 1, 1000, 2});
+    // instances.push_back({1000000, 100, 1, 1000, 4});
+    // instances.push_back({1000000, 100, 1, 1000, 6});
+    // instances.push_back({1000000, 100, 1, 1000, 8});
+    // instances.push_back({1000000, 100, 1, 1000, 12});
+    // instances.push_back({1000000, 100, 1, 1000, 16});
+    // instances.push_back({1000000, 100, 1, 1000, 24});
 
     /*
     instances.push_back({10000000, 3,     1, 1000, 1});
@@ -85,9 +104,14 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     instances.push_back({10000000, 20000, 1, 1000, 1});
     */
 
+    globIn_ = new Points2D();
+    Instance ix = instances[0];
+    Generator2D generator;
+    generator.genUniformCircle(ix.n, ix.h, ix.span, *globIn_);
     for (auto& inst : instances) {
         runTestInstance(inst, solvers);
     }
+    delete globIn_;
 }
 
 void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
@@ -97,9 +121,14 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
               << inst.h    << " on hull, "
               << inst.runs << " runs" << std::endl;
 
+    /*
     Generator2D generator;
+    Points2D input;
+    generator.genUniformCircle(inst.n, inst.h, inst.span, input);
+    */
+    omp_set_num_threads(inst.cores);
     for (auto solver : solvers) {
-        std::cout << std::setw(15) << solver -> getName() << ": ";
+        // std::cout << std::setw(15) << solver -> getName() << ": ";
         double timeSum = 0.0, currTime;
         int failed = 0;
         if (solver -> getName() == "Jarvis Scan" && inst.h > 250) {
@@ -107,9 +136,7 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
             continue;
         }
         for (int i = 0; i < inst.runs; i++) {
-            Points2D input;
-            generator.genUniformCircle(inst.n, inst.h, inst.span, input);
-            currTime = runGeneratedTest(inst.h, input, *solver);
+            currTime = runGeneratedTest(inst.h, *globIn_, *solver);
             if (currTime < -EPS) {
                 failed++;
             } else {
@@ -120,7 +147,7 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
             std::cout << "[FAILED] (" << failed << " of "
                       << inst.runs << ")" << std::endl;
         } else {
-            std::cout << timeSum << " s" << std::endl;
+            std::cout << timeSum << " ";
         }
     }
 
@@ -140,7 +167,7 @@ double PerfTest::runGeneratedTest(int h, Points2D& input, Solver2D& solver)
     solver.solve(input, output);
     double timeEnd   = omp_get_wtime();
 
-    if (output.getSize() != h) {
+    if ((int) output.getSize() != h) {
         return -1;
     }
     return timeEnd - timeStart;
@@ -149,7 +176,7 @@ double PerfTest::runGeneratedTest(int h, Points2D& input, Solver2D& solver)
 void PerfTest::approxTests(Approximator2D& scheme)
 {
     std::vector<Instance> instances;
-    instances.push_back({5000000, 500, 1, 1000});
+    instances.push_back({5000000, 500, 1, 1000, 1});
 
     for (auto& inst : instances) {
         runApproxInstance(inst, scheme);

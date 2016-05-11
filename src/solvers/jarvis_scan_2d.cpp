@@ -6,7 +6,7 @@ namespace ch
 JarvisScan2D::JarvisScan2D()
 {
     name_ = "Jarvis Scan";
-    variant_ = CROSS;
+    variant_ = PARA_INT;
 }
 
 JarvisScan2D::JarvisScan2D(Variant v)
@@ -23,7 +23,7 @@ Points2D& JarvisScan2D::solve(const Points2D& input, Points2D& output)
             return solvePolar(input, output);
         case CROSS:
             return solveCross(input, output);
-        case PARA:
+        default:
             return solvePara(input, output);
     }
     // should never happen
@@ -233,20 +233,46 @@ Points2D& JarvisScan2D::solvePara(const Points2D& input, Points2D& output)
 
     data_t part[4];
 
+    switch (variant_) {
+        case PARA_INT:
+            scanPara(inputData, part[0], minXIdx, maxYIdx);
+            scanPara(inputData, part[1], maxYIdx, maxXIdx);
+            scanPara(inputData, part[2], maxXIdx, minYIdx);
+            scanPara(inputData, part[3], minYIdx, minXIdx);
+            break;
+        case PARA_DOUBLE:
 #pragma omp parallel
-    {
+            {
 #pragma omp sections
-        {
+                {
 #pragma omp section
-            scan(inputData, part[0], minXIdx, maxYIdx);
+                    scanPara(inputData, part[0], minXIdx, maxYIdx);
 #pragma omp section
-            scan(inputData, part[1], maxYIdx, maxXIdx);
+                    scanPara(inputData, part[1], maxYIdx, maxXIdx);
 #pragma omp section
-            scan(inputData, part[2], maxXIdx, minYIdx);
+                    scanPara(inputData, part[2], maxXIdx, minYIdx);
 #pragma omp section
-            scan(inputData, part[3], minYIdx, minXIdx);
-        }
+                    scanPara(inputData, part[3], minYIdx, minXIdx);
+                }
+            }
+            break;
+        default:
+#pragma omp parallel
+            {
+#pragma omp sections
+                {
+#pragma omp section
+                    scan(inputData, part[0], minXIdx, maxYIdx);
+#pragma omp section
+                    scan(inputData, part[1], maxYIdx, maxXIdx);
+#pragma omp section
+                    scan(inputData, part[2], maxXIdx, minYIdx);
+#pragma omp section
+                    scan(inputData, part[3], minYIdx, minXIdx);
+                }
+            }
     }
+
 
     for (int i = 0; i < 4; i++) {
         for (auto& pt : part[i]) {
@@ -299,6 +325,91 @@ void JarvisScan2D::scan(const data_t& input, data_t& output,
             } else if (o == 1) {
                 // point to the left of current hull face
                 nextIdx = i;
+            }
+        }
+        currIdx = nextIdx;
+    }
+}
+
+void JarvisScan2D::scanPara(const data_t& input, data_t& output,
+                        unsigned beginIdx, unsigned endIdx)
+{
+    unsigned currIdx = beginIdx, nextIdx;
+    while (currIdx != endIdx) {
+        output.push_back(input[currIdx]);
+        // avoid setting same point as next
+        nextIdx = !currIdx;
+
+        // check orientation for all remaining n - 1 points
+        
+        unsigned cand[24];
+        for (int i = 0; i < 24; i++) {
+            cand[i] = !currIdx;
+        }
+
+#pragma omp parallel for default(shared) schedule(static)
+        for (unsigned i = 0; i < input.size(); i++) {
+            if (i == currIdx) {
+                continue;
+            }
+            unsigned& next = cand[omp_get_thread_num()];
+
+            int o = orientation(input[currIdx][0],
+                                input[currIdx][1],
+                                input[next][0],
+                                input[next][1],
+                                input[i      ][0],
+                                input[i      ][1]);
+
+            if (o == 0) {
+                // exclude collinear points
+                if (dist(input[currIdx][0],
+                         input[currIdx][1],
+                         input[i][0],
+                         input[i][1])
+                    >
+                    dist(input[currIdx][0],
+                         input[currIdx][1],
+                         input[next][0],
+                         input[next][1])) {
+                    next = i;
+                }
+            } else if (o == 1) {
+                // point to the left of current hull face
+                next = i;
+            }
+        }
+
+        nextIdx = !currIdx;
+
+        for (unsigned i = 0; i < 24; i++) {
+            if (cand[i] == currIdx) {
+                continue;
+            }
+
+            int o = orientation(input[currIdx][0],
+                                input[currIdx][1],
+                                input[nextIdx][0],
+                                input[nextIdx][1],
+                                input[cand[i]][0],
+                                input[cand[i]][1]);
+
+            if (o == 0) {
+                // exclude collinear points
+                if (dist(input[currIdx][0],
+                         input[currIdx][1],
+                         input[cand[i]][0],
+                         input[cand[i]][1])
+                    >
+                    dist(input[currIdx][0],
+                         input[currIdx][1],
+                         input[nextIdx][0],
+                         input[nextIdx][1])) {
+                    nextIdx = cand[i];
+                }
+            } else if (o == 1) {
+                // point to the left of current hull face
+                nextIdx = cand[i];
             }
         }
         currIdx = nextIdx;

@@ -33,8 +33,9 @@ class PerfTest
     private:
         /** One instance of test run */
         struct Instance {
-            int n, h, runs, cores;
+            int n, h, runs;
             double span;
+            int cores;
         };
 
         /**
@@ -72,7 +73,7 @@ class PerfTest
          * @param inst instance parameters
          * @param solvers solvers to use on specified instance
          */
-        void runTestInstance(Instance& inst, std::vector<Solver2D*> solvers);
+        void runTestInstance(Instance& instnested, std::vector<Solver2D*> solvers);
 
         /**
          * Runs, and measures single problem instance.
@@ -117,6 +118,8 @@ class PerfTest
 
         /** File for logging results */
         std::ofstream logFile_;
+
+        Points2D * globIn_;
 
 };
 

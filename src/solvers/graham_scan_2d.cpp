@@ -6,7 +6,7 @@ namespace ch
 GrahamScan2D::GrahamScan2D()
 {
     name_ = "Graham Scan";
-    variant_ = PARA_LIN;
+    variant_ = PARA_LIN_STABLE;
 }
 
 GrahamScan2D::GrahamScan2D(Variant v)
@@ -191,7 +191,7 @@ unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
 void GrahamScan2D::sortPoints(const data_t& inputData)
 {
     computeAngles(inputData);
-    std::stable_sort((order_.begin()) + 1, order_.end(),
+    std::sort((order_.begin()) + 1, order_.end(),
             AngleCmp(*this, inputData));
 }
 

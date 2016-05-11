@@ -21,6 +21,7 @@ class Quickhull2D : public Solver2D
 
         enum Variant {NAIVE, FORWARD, PRECOMP, PARA};
         Quickhull2D(Variant v);
+        Quickhull2D(Variant v, int threshold);
 
     private:
         void recNaive(point_t& a, point_t& b, data_t& plane);
