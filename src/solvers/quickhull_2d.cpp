@@ -9,7 +9,7 @@ Quickhull2D::Quickhull2D()
     name_ = "Quickhull";
     EPS_LOC = 1e-6;
     variant_ = FORWARD;
-    parallelThreshold_ = 100000;
+    parallelThreshold_ = 1000;
 }
 
 Quickhull2D::Quickhull2D(Variant v)
@@ -18,7 +18,7 @@ Quickhull2D::Quickhull2D(Variant v)
     name_ = "Quickhull";
     EPS_LOC = 1e-6;
     variant_ = v;
-    parallelThreshold_ = 100000;
+    parallelThreshold_ = 1000;
 }
 
 Quickhull2D::Quickhull2D(Variant v, int threshold)

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <omp.h>
+
 #include "approximators/bfp2d.h"
 
 #include "lib/structures.h"
@@ -41,6 +43,17 @@ enum SolverType {JARVIS, GRAHAM, ANDREW, QUICKHULL, CHAN};
  * @return Same as output param, reference to result
  */
 Points2D& findHull(const Points2D& input, Points2D& output, SolverType type);
+
+/** Parallel version of findHull, allows to choose number of threads */
+Points2D& findHullParallel(const Points2D& input, Points2D& output, int thr);
+
+/**
+ * Parallel version of findHull with algorithm selection,
+ * allows to choose number of threads 
+ */
+Points2D& findHullParallel(const Points2D& input, Points2D& output, 
+        SolverType type, int thr);
+
 
 /**
  * Approximates convex hull of given set of points using BFP approximation

@@ -22,9 +22,12 @@ using namespace std;
 
 bool read2D(std::istream& is, ch::Points2D& input)
 {
-    long long int n;
-    is >> n;
-    if (n > (1 << 31)) {
+    long long int n = 0;
+    if (!(is >> n)) {
+        std::cerr << "[ERROR] Cannot read input size" << std::endl;
+        return 0;
+    }
+    if (n > (1LL << 31)) {
         std::cerr << "[ERROR] Input is too large (max 2^31)" << std::endl;
         return 0;
     }
@@ -32,8 +35,7 @@ bool read2D(std::istream& is, ch::Points2D& input)
     double a, b;
     for (int i = 0; i < n; i++) {
         if (!(is >> a >> b)) {
-            std::cerr << "[ERROR] Cannot read all points (input too small?)"
-                << std::endl;
+            std::cerr << "[ERROR] Cannot read point" << std::endl;
             return 0;
         }
         input.add({a, b});
@@ -56,7 +58,7 @@ bool read3D(std::istream& is, ch::Points3D& input)
 {
     long long int n;
     is >> n;
-    if (n > (1 << 31)) {
+    if (n > (1LL << 31)) {
         std::cerr << "[ERROR] Input is too large (max 2^31)" << std::endl;
         return 0;
     }
@@ -64,8 +66,7 @@ bool read3D(std::istream& is, ch::Points3D& input)
     double a, b, c;
     for (int i = 0; i < n; i++) {
         if (!(is >> a >> b >> c)) {
-            std::cerr << "[ERROR] Cannot read all points (input too small?)"
-                << std::endl;
+            std::cerr << "[ERROR] Cannot read points" << std::endl;
             return 0;
         }
         input.add({a, b, c});
@@ -200,7 +201,13 @@ int main(int argc, char ** argv)
                 displayTime = 1;
                 break;
 
-            case '-':
+            case ':':
+                std::cerr << "[ERROR] Missing option argument" << std::endl;
+                endFlag = 1;
+                wasError = 1;
+                break;
+
+            case '?':
                 std::cerr << "[ERROR] Unknown option: " << (char)c << std::endl;
                 endFlag = 1;
                 wasError = 1;
@@ -208,7 +215,6 @@ int main(int argc, char ** argv)
 
             default:
                 endFlag = 1;
-                wasError = 1;
         }
         if (endFlag)
             break;
