@@ -1,4 +1,5 @@
 NAME := cheetah
+LIBNAME := libcheetah.a
 
 CC := g++
 SRCDIR := src
@@ -6,10 +7,16 @@ BUILDDIR := build
 MODULES := app approximators lib solvers
 MKBDIR := $(addprefix build/, $(MODULES))
 TARGET := bin/$(NAME)
+LIBTARGET := bin/$(LIBNAME)
+LIBINCL := bin/include
+LIBMODULES := $(addprefix $(LIBINCL)/,$(MODULES))
 
 SRCEXT := cpp
+HDREXT := h
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
+HEADERSRC := $(shell find $(SRCDIR) -type f -name *.$(HDREXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
+HEADERS := $(patsubst $(SRCDIR)/%,$(LIBINCL)/%,$(HEADERSRC))
 CFLAGS := -g -Wall -Wextra -pedantic -std=c++11 -O3 -ffast-math -march=native -fopenmp
 LIB := -fopenmp
 INC := -I src
@@ -34,9 +41,21 @@ $(BUILDDIR)/$(TESTDIR)/%.o: $(TESTDIR)/%.$(SRCEXT)
 	$(eval TESTFLAG := -DTEST_MAIN)
 	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
+$(LIBMODULES):
+	mkdir -p $@
+
+$(HEADERS): $(LIBMODULES)
+	cp $(patsubst $(LIBINCL)/%,$(SRCDIR)/%,$@) $@
+
+linklib: $(OBJECTS)
+	@echo " Linking to static library..."
+	ar rcs $(LIBTARGET) $^
+
+lib: linklib $(HEADERS)
+
 clean:
 	@echo " Cleaning...";
-	rm -rf $(BUILDDIR) $(TARGET)
+	rm -rf $(BUILDDIR) $(TARGET) $(LIBTARGET) $(LIBINCL)
 
 run: $(TARGET)
 	$(TARGET)
