@@ -123,6 +123,74 @@ void PerfTest::bigTests(std::vector<Solver2D*> solvers)
     }
 }
 
+double PerfTest::runTest(int n, int h, int span, int runs,
+                int cores, SolverType type)
+{
+    Solver2D * solver = NULL;
+    if (cores > 1) {
+        switch (type) {
+            case JARVIS:
+                solver = new JarvisScan2D(JarvisScan2D::PARA_DOUBLE);
+                break;
+            case GRAHAM:
+                solver = new GrahamScan2D(GrahamScan2D::PARA);
+                break;
+            case QUICKHULL:
+                solver = new Quickhull2D(Quickhull2D::PARA);
+                break;
+            case CHAN:
+                solver = new Chan2D(Chan2D::PARA_OVER);
+                break;
+            case ANDREW:
+                solver = new MonotoneChain2D();
+                break;
+            default:
+                solver = new Quickhull2D(Quickhull2D::PARA);
+                break;
+        }
+    } else {
+        switch (type) {
+            case JARVIS:
+                solver = new JarvisScan2D();
+                break;
+            case GRAHAM:
+                solver = new GrahamScan2D();
+                break;
+            case QUICKHULL:
+                solver = new Quickhull2D();
+                break;
+            case CHAN:
+                solver = new Chan2D();
+                break;
+            case ANDREW:
+                solver = new MonotoneChain2D();
+                break;
+            default:
+                solver = new Quickhull2D();
+                break;
+        }
+    }
+
+    Points2D input;
+    Generator2D generator;
+    std::cout << "Generating test instance..." << std::endl;
+    generator.genUniformCircle(n, h, span, input);
+    std::cout << "...done, running test" << std::endl;
+    omp_set_num_threads(cores);
+    double timeSum = 0.0, currTime;
+    int failed = 0;
+    for (int i = 0; i < runs; i++) {
+        currTime = runGeneratedTest(h, input, *solver);
+        if (currTime < -EPS) {
+            failed++;
+        } else {
+            timeSum += currTime;
+        }
+    }
+    delete solver;
+    return timeSum;
+}
+
 void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
 {
     std::cout << std::fixed << std::setprecision(6);
@@ -134,14 +202,6 @@ void PerfTest::runTestInstance(Instance& inst, std::vector<Solver2D*> solvers)
     Points2D input;
     generator.genUniformCircle(inst.n, inst.h, inst.span, input);
 
-    // temporary input storage
-    std::ofstream ofs("aside/cmp/data" + std::to_string(counter_++) + ".in");
-    ofs << inst.n << std::endl;
-    for (auto& i : input.getData()) {
-        ofs << i[0] << " " << i[1] << std::endl;
-    }
-    ofs.close();
-    
     omp_set_num_threads(inst.cores);
     for (auto solver : solvers) {
         // std::cout << std::setw(15) << solver -> getName() << ": ";
@@ -184,7 +244,8 @@ double PerfTest::runGeneratedTest(int h, Points2D& input, Solver2D& solver)
     double timeEnd   = omp_get_wtime();
 
     if ((int) output.getSize() != h) {
-        return -1;
+        std::cout << "[WARNING] Precision errors occured (h may be too high)"
+            << std::endl;
     }
     return timeEnd - timeStart;
 }

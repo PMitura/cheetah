@@ -156,7 +156,7 @@ std::pair<unsigned, unsigned> Chan2D::findNext(std::vector<Points2D>& hulls,
                             candP[0], candP[1],
                             propP[0], propP[1]);
 
-        if (o == 2) {
+        if (o == 1) {
             // right turn
             cand = {tgt, sub};
             candP = propP;
@@ -198,6 +198,7 @@ unsigned Chan2D::findMinHull(std::vector<Points2D>& hulls, unsigned& minPt)
 
 unsigned Chan2D::findTangent(const Points2D& hull, point_t& p)
 {
+    R("pt: " << p[0] << " " << p[1])
     const data_t& hdata = hull.getData();
     if (hdata.size() == 1) {
         return 0;
@@ -211,7 +212,12 @@ unsigned Chan2D::findTangent(const Points2D& hull, point_t& p)
         }
     }
 
-    unsigned left = 0, right = hdata.size(), mid, s = hdata.size();
+    R("  hull");
+    for (auto i : hdata) {
+        R("  " << p[0] << " " << p[1]);
+    }
+
+    unsigned left = 0, right = hdata.size() - 1, mid, s = hdata.size();
     int olFrnt = orientation(p[0],            p[1],
                              hdata[0][0],     hdata[0][1],
                              hdata[1][0],     hdata[1][1]),
@@ -234,12 +240,13 @@ unsigned Chan2D::findTangent(const Points2D& hull, point_t& p)
                                  hdata[left][0], hdata[left][1],
                                  hdata[mid][0],  hdata[mid][1]);
 
-        if (omBack == 1 && omFrnt == 1) {
+        if (omBack != 1 && omFrnt != 1) {
+            R("  tangent pt: " << hdata[mid][0] << " " << hdata[mid][1])
             return mid;
         }
 
-        if (   (omSelf == 2 && omBack == 2)
-            || (omSelf == 1 && (olFrnt == 2 || olBack == olFrnt))) {
+        if (   (omSelf == 1 && omBack == 1)
+            || (omSelf == 2 && (olFrnt == 1 || olBack == olFrnt))) {
             right = mid;
         } else {
             left = mid + 1;
@@ -250,11 +257,12 @@ unsigned Chan2D::findTangent(const Points2D& hull, point_t& p)
                 olBack = 1;
             }
             olFrnt = orientation(p[0], p[1],
-                hdata[left % s][0], hdata[left % s][1],
+                hdata[left][0], hdata[left][1],
                 hdata[(left+1) % s][0], hdata[(left+1) % s][1]);
         }
     }
-    return 1;
+    R("fallback")
+    return left;
 }
 
 }

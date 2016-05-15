@@ -7,6 +7,8 @@
 #include <ctime>
 #include <omp.h>
 
+#include "lib/lib.h"
+
 #include "approximators/approximator2d.h"
 #include "approximators/bfp2d.h"
 #include "lib/generator.h"
@@ -31,6 +33,10 @@ class PerfTest
     public:
         /** Runs all scheduled tests */
         void runAllTests();
+
+        /** Runs one test with specified parameters */
+        double runTest(int n, int h, int span, int runs,
+                int cores, SolverType type);
 
     private:
         /** One instance of test run */
@@ -63,7 +69,7 @@ class PerfTest
         void testEdges();
 
         /**
-         * Finds point where QH beats JS, and GS beats QH.
+         * Finds point where QH beats JS, and GS beats QH. If that happens.
          *
          * @param setSize number of points in input set
          */
@@ -75,7 +81,7 @@ class PerfTest
          * @param inst instance parameters
          * @param solvers solvers to use on specified instance
          */
-        void runTestInstance(Instance& instnested, std::vector<Solver2D*> solvers);
+        void runTestInstance(Instance& inst, std::vector<Solver2D*> solvers);
 
         /**
          * Runs, and measures single problem instance.

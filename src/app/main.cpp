@@ -108,7 +108,7 @@ int main(int argc, char ** argv)
 
     // perftest related
     bool perfMode = 0;
-    std::vector<int> instance;
+    std::vector<long long int> instance;
     int index;
     
     // if custom algo
@@ -119,10 +119,13 @@ int main(int argc, char ** argv)
 
     bool displayTime = 0;
 
+    bool parallelMode = 0;
+    int threads = 0;
+
     int c, val;
     bool endFlag = 0, wasError = 0, argOK;
     string nxtArg;
-    while ((c = getopt(argc, argv, "i:o:p:s:d:t"))) {
+    while ((c = getopt(argc, argv, "i:o:p:s:d:m:t"))) {
         switch (c) {
             case 'i':
                 useFileInput = 1;
@@ -155,8 +158,8 @@ int main(int argc, char ** argv)
                         val += c - '0';
                     }
                     if (!argOK) {
-                        std::cerr << "[ERROR] non-numerical argument given to"
-                            << " performance testing" << std::endl;
+                        std::cerr << "[ERROR] Non-numerical or negative "
+                            << "argument in perftest" << std::endl;
                         endFlag = 1;
                         wasError = 1;
                         break;
@@ -168,7 +171,7 @@ int main(int argc, char ** argv)
                     break;
                 }
                 if (instance.size() != 5) {
-                    std::cerr << "[ERROR] incorrect number of arguments "
+                    std::cerr << "[ERROR] Incorrect number of arguments "
                               << "for performance testing" << std::endl;
                     wasError = 1;
                 }
@@ -201,6 +204,36 @@ int main(int argc, char ** argv)
                 displayTime = 1;
                 break;
 
+            case 'm':
+                R("set parellel mode");
+                parallelMode = 1;
+                nxtArg = optarg;
+                for (auto& c : nxtArg) {
+                    if (!isdigit(c)) {
+                        argOK = 0;
+                        break;
+                    }
+                    threads *= 10;
+                    threads += c - '0';
+                }
+                if (!argOK) {
+                    std::cerr << "[ERROR] Non-numerical or negative"
+                        << " number of threads" << std::endl;
+                    return 1;
+                }
+                if (threads < 1) {
+                    std::cerr << "[ERROR] Cannot use zero threads" << std::endl;
+                    return 1;
+                }
+                if (threads > (int) ch::MAX_NUM_THREADS) {
+                    std::cerr << "[ERROR] Too many threads " <<
+                        "(limit set at " << ch::MAX_NUM_THREADS << ")" 
+                        << std::endl;
+                    return 1;
+                }
+
+                break;
+
             case ':':
                 std::cerr << "[ERROR] Missing option argument" << std::endl;
                 endFlag = 1;
@@ -208,7 +241,7 @@ int main(int argc, char ** argv)
                 break;
 
             case '?':
-                std::cerr << "[ERROR] Unknown option: " << (char)c << std::endl;
+                std::cerr << "[ERROR] Unknown option" << std::endl;
                 endFlag = 1;
                 wasError = 1;
                 break;
@@ -229,10 +262,6 @@ int main(int argc, char ** argv)
     }
 
     if (dimension == 2) {
-        if (perfMode) {
-            R("Running perftest");
-            return 0;
-        }
         ch::SolverType sType = ch::QUICKHULL;
         if (customAlgo) {
             if (usedAlgo == "jarvis") {
@@ -251,6 +280,35 @@ int main(int argc, char ** argv)
                     std::endl;
                 return 1;
             }
+        }
+
+        if (perfMode) {
+            R("Running perftest");
+            if (instance[0] > (1LL << 31)) {
+                std::cerr << "[ERROR] Too large instance" <<  std::endl;
+                return 1;
+            }
+            if (instance[1] > instance[0]) {
+                std::cerr << "[ERROR] Selected number of points on hull "
+                    << "is greater than number of points in set" << 
+                    std::endl;
+                return 1;
+            }
+            if (instance[4] > (int) ch::MAX_NUM_THREADS) {
+                std::cerr << "[ERROR] Number of threads higher than limit"
+                    << std::endl;
+                return 1;
+            } else if (instance[4] < 1) {
+                std::cerr << "[ERROR] Number of threads lesser than one"
+                    << std::endl;
+                return 1;
+            }
+
+            ch::PerfTest ptest;
+            double perf = ptest.runTest(instance[0], instance[1],
+                    instance[2], instance[3], instance[4], sType);
+            std::cout << "time: " << perf << std::endl;
+            return 0;
         }
 
         ch::Points2D input;
@@ -273,7 +331,12 @@ int main(int argc, char ** argv)
 
         ch::Points2D output;
         double timeA = omp_get_wtime();
-        findHull(input, output, sType);
+        if (parallelMode) {
+            D("parallel " << threads);
+            findHullParallel(input, output, sType, threads);
+        } else {
+            findHull(input, output, sType);
+        }
         double timeB = omp_get_wtime();
         if (displayTime) {
             std::cout << "Execution time: " << timeB - timeA << " ms." << std::endl;
@@ -296,6 +359,11 @@ int main(int argc, char ** argv)
             std::cerr << "[ERROR] Performance testing not implemented for 3D: "
                 << usedAlgo << std::endl;
             return 1;
+        }
+
+        if (parallelMode) {
+            std::cout << "[WARNING] No 3D parallel algorithm available, "
+                << "using sequential solver" << std::endl;
         }
 
         if (customAlgo && usedAlgo != "jarvis") {

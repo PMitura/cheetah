@@ -6,7 +6,7 @@ namespace ch
 GrahamScan2D::GrahamScan2D()
 {
     name_ = "Graham Scan";
-    variant_ = PARA_LIN;
+    variant_ = SEQ;
 }
 
 GrahamScan2D::GrahamScan2D(Variant v)
@@ -149,7 +149,7 @@ unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
     ptStack[0] = order_[0];
     ptStack[1] = order_[1];
     while (iPtr < iSize) {
-        if (cw(inputData[ptStack[0]][0],
+        if (ccw(inputData[ptStack[0]][0],
                inputData[ptStack[0]][1],
                inputData[ptStack[1]][0],
                inputData[ptStack[1]][1],
@@ -161,7 +161,7 @@ unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
     }
 
     while (iPtr < iSize) {
-        if (cw(inputData[ptStack[sPtr - 2]][0],
+        if (ccw(inputData[ptStack[sPtr - 2]][0],
                inputData[ptStack[sPtr - 2]][1],
                inputData[ptStack[sPtr - 1]][0],
                inputData[ptStack[sPtr - 1]][1],
@@ -175,7 +175,7 @@ unsigned GrahamScan2D::scan(const data_t& inputData, unsigned * ptStack)
 
     // handle last point collinear with first
     if (sPtr >= 3) {
-        if (cw(inputData[ptStack[sPtr - 2]][0],
+        if (ccw(inputData[ptStack[sPtr - 2]][0],
                inputData[ptStack[sPtr - 2]][1],
                inputData[ptStack[sPtr - 1]][0],
                inputData[ptStack[sPtr - 1]][1],
@@ -220,7 +220,7 @@ bool GrahamScan2D::AngleCmp::operator()(const unsigned& a, const unsigned& b)
                < dist({data_[part_.pivot_][0], data_[part_.pivot_][1]},
                         {data_[b][0], data_[b][1]});
     }
-    return x < EPS;
+    return x > EPS;
 }
 
 bool GrahamScan2D::yCmp::operator()(const point_t& a, const point_t& b)

@@ -40,8 +40,11 @@ Points2D& findHull(const Points2D& input, Points2D& output, SolverType type)
 Points2D& findHullParallel(const Points2D& input, Points2D& output, int thr)
 {
     Quickhull2D quick(Quickhull2D::PARA);
-    if (thr > MAX_NUM_THREADS) {
+    if ((unsigned) thr > MAX_NUM_THREADS) {
         thr = MAX_NUM_THREADS;
+    }
+    if (thr < 1) {
+        thr = 1;
     }
     omp_set_num_threads(thr);
     return quick.solve(input, output);
@@ -62,7 +65,7 @@ Points2D& findHullParallel(const Points2D& input, Points2D& output,
             solver = new Quickhull2D(Quickhull2D::PARA);
             break;
         case CHAN:
-            solver = new Chan2D(Chan2D::PARA_COMBO);
+            solver = new Chan2D(Chan2D::PARA_OVER);
             break;
         case ANDREW:
             solver = new MonotoneChain2D();
@@ -71,8 +74,11 @@ Points2D& findHullParallel(const Points2D& input, Points2D& output,
             solver = new Quickhull2D(Quickhull2D::PARA);
             break;
     }
-    if (thr > MAX_NUM_THREADS) {
+    if ((unsigned) thr > MAX_NUM_THREADS) {
         thr = MAX_NUM_THREADS;
+    }
+    if (thr < 1) {
+        thr = 1;
     }
     omp_set_num_threads(thr);
     Points2D& result = solver -> solve(input, output);

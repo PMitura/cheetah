@@ -401,7 +401,7 @@ void Quickhull2D::recForwarded(const point_t& a, const point_t& b, const point_t
         int pt = plane[i];
         double aco = cross(a[0], a[1], c[0], c[1],
                         (*globIn_)[pt][0], (*globIn_)[pt][1]);
-        if (aco < -EPS_LOC) {
+        if (aco > EPS_LOC) {
             acPlane.push_back(pt);
             double fac = fabs(aco);
             if (fac > acMax) {
@@ -413,7 +413,7 @@ void Quickhull2D::recForwarded(const point_t& a, const point_t& b, const point_t
 
         double cbo = cross(c[0], c[1], b[0], b[1],
                         (*globIn_)[pt][0], (*globIn_)[pt][1]);
-        if (cbo < -EPS_LOC) {
+        if (cbo > EPS_LOC) {
             cbPlane.push_back(pt);
             double fcb = fabs(cbo);
             if (fcb > cbMax) {
@@ -484,11 +484,11 @@ Points2D& Quickhull2D::solveForwarded(const Points2D& input, Points2D& output)
         }
     }
 
-    output.add(pivotLeft);
-    recForwarded(pivotLeft, pivotRight, inputData[topFar], topPlane,
-                topPtr);
     output.add(pivotRight);
-    recForwarded(pivotRight, pivotLeft, inputData[botFar], botPlane,
+    recForwarded(pivotRight, pivotLeft, inputData[topFar], topPlane,
+                topPtr);
+    output.add(pivotLeft);
+    recForwarded(pivotLeft, pivotRight, inputData[botFar], botPlane,
                 botPtr);
 
     return output;
@@ -529,7 +529,7 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
         int pt = plane[i];
         double aco = cross(a[0], a[1], c[0], c[1],
                         (*globIn_)[pt][0], (*globIn_)[pt][1]);
-        if (aco < -EPS_LOC) {
+        if (aco > EPS_LOC) {
             acPlane.push_back(pt);
             double fac = fabs(aco);
             if (fac > acMax) {
@@ -541,7 +541,7 @@ void Quickhull2D::recParallel(const point_t& a, const point_t& b, const point_t&
 
         double cbo = cross(c[0], c[1], b[0], b[1],
                         (*globIn_)[pt][0], (*globIn_)[pt][1]);
-        if (cbo < -EPS_LOC) {
+        if (cbo > EPS_LOC) {
             cbPlane.push_back(pt);
             double fcb = fabs(cbo);
             if (fcb > cbMax) {
@@ -665,19 +665,19 @@ Points2D& Quickhull2D::solveParallel(const Points2D& input, Points2D& output)
 #pragma omp sections
         {
 #pragma omp section
-            recParallel(pivotLeft, pivotRight, inputData[topFar], topPlane,
+            recParallel(pivotRight, pivotLeft, inputData[topFar], topPlane,
                         topPtr, topList);
 #pragma omp section
-            recParallel(pivotRight, pivotLeft, inputData[botFar], botPlane,
+            recParallel(pivotLeft, pivotRight, inputData[botFar], botPlane,
                         botPtr, botList);
         }
     }
 
-    output.add(pivotLeft);
+    output.add(pivotRight);
     for (auto pt : topList) {
         output.add(pt);
     }
-    output.add(pivotRight);
+    output.add(pivotLeft);
     for (auto pt : botList) {
         output.add(pt);
     }

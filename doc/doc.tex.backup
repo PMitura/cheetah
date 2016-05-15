@@ -1,0 +1,240 @@
+\documentclass[a4paper, 12pt, slovak]{article}
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{ifpdf}
+\usepackage{url}
+\usepackage{color}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{epstopdf}
+\usepackage[top=50pt,bottom=50pt,left=50pt,right=50pt]{geometry}
+
+\lstdefinestyle{c++}
+{
+    language=C++,
+    frame=none,
+    basicstyle=\footnotesize\ttfamily,
+    showspaces=false,
+    keywordstyle=\color{blue},
+    commentstyle=\color{red}
+    texcl=false,
+    mathescape=false,
+    prebreak = \raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}}
+}
+\lstnewenvironment{c++}
+{\lstset{style=c++}}
+{}
+
+\renewcommand{\contentsname}{Obsah}
+
+\newtheorem{definicia}{Definícia}
+
+\begin{document}
+
+\title{Manuál k aplikácií a knižnici cheetah}
+\date{}
+\author{Peter Mitura}
+\maketitle
+
+\emph{Cheetah} je aplikácia a knižnica umožňujúca efektívne riešiť problém konvexnej 
+obálky. Tento manuál popisuje všetky možnosti aplikácie, funkcie knižnice a postup 
+ich inštalácie.
+
+\tableofcontents
+\pagebreak
+
+\section{Inštalácia}
+Popis inštalačných procedúr, potrebných k sprevádzkovaniu projektu \emph{Cheetah} na 
+vašom počítači.
+\subsection{Požiadavky}
+Projekt je určený pre systém GNU/Linux, prípadne iné unix-like systémy. Pre 
+inštaláciu je ďalej potrebné, aby ste na systéme mali nainštalované nasledovné 
+komponenty:
+
+\begin{itemize}
+ \item \textbf{GCC} verzia 5.0 alebo vyššia, s podporou OpenMP 
+(\url{https://gcc.gnu.org/})
+ \item \textbf{GNU ar} (\url{https://sourceware.org/binutils/docs/binutils/ar.html})
+ \item \textbf{GNU Make} (\url{https://www.gnu.org/software/make/})
+ \item \emph{(voliteľne)} \textbf{Google Test} 
+(\url{https://github.com/google/googletest})
+\end{itemize}
+
+Google Test je potrebný len k sprevádzkovaniu modulu jednotkových testov, aplikácia 
+aj knižnica môže fungovať aj bez neho.
+
+\subsection{Kompilácia}
+Kompilácia je automatizovaná nástrojom GNU Make, na výber sú tri direktívy, ktorými 
+sa kompilujú rôzne moduly projektu:
+
+\begin{itemize}
+ \item \texttt{make}, \texttt{make app} -- Aplikácia pre príkazový riadok, vytvorený 
+je spustiteľný súbor \texttt{cheetah} v~adresári \texttt{bin}
+ \item \texttt{make lib} -- Knižnica, do adresára \texttt{bin} je skompilovaný súbor 
+\texttt{libcheetah.a} a vytvorený adresár \texttt{include}, obsahujúci príslušné 
+hlavičkové súbory.
+ \item \texttt{make test} -- Jednotkové testy, po kompilácií sú automaticky aj 
+spustené a vyhodnotené.
+\end{itemize}
+
+Upozorňujeme, že každý z týchto modulov používa zdieľané objektové súbory v adresári 
+\texttt{build}. Je preto nutné pri každej zmene modulu zavolať príkaz \texttt{make 
+clean}, ktorý vráti projekt do počiatočného stavu.
+
+\section{Aplikácia}
+Aplikácia sa po kompilácií nachádza v adresári \texttt{bin} pod názvom 
+\texttt{cheetah}, je možné ju ďalej skopírovať do jedného z adresárov definovaných
+v~premennej prostredia \texttt{PATH} a používať z ľubo\-voľ\-ného miesta v systéme.
+
+\subsection{Formát vstupu}
+Program prijíma textový vstup, začínajúci prirodzeným číslom $n$, označujúcim počet 
+vstupných bodov, za ktorým nasleduje $n$ dvojíc alebo trojíc reálnych čísel, 
+reprezentujúcich súradnice bodov v $\mathbb{R}^2$ resp. $\mathbb{R}^3$. Čísla 
+sú oddelené bielymi znakmi. Príklad vstupu v $\mathbb{R}^2$:
+
+\begin{c++}
+4
+0 10
+-10 0
+9.8002 0
+0 1
+\end{c++}
+
+\subsection{Formát výstupu}
+Výstup v $\mathbb{R}^2$ má rovnakú podobu, ako vstup. Body v ňom sú vypísané v 
+poradí, v ktorom sa objavujú na obálke, teda proti smeru hodinových ručičiek. 
+
+Výstup v $\mathbb{R}^3$ je odlišný, začína sa prirodzeným číslom $n$, označujúcim 
+počet stien. Za ním nasleduje popis $n$ stien, pri čom popis jednej steny sa skladá 
+z prirodzeného čísla $m$ a po ňom $m$ trojíc reálnych čísel, predstavujúcich 
+súradnice vrcholov na danej stene. Vrcholy v rámci jednej steny sú zoradené proti 
+smeru hodinových ručičiek
+
+\subsection{Základné použitie}
+Bez špecifikovaných prepínačov aplikácia hľadá konvexnné obálky v $R^2$ s použitím 
+algoritmu Quickhull. Vstupné dáta sú očakávané na štandardnom vstupe, výstup je 
+vypísaný na štandardný výstup. Ak by sme vyššie uvedený príklad vstupu uložili do 
+súboru \texttt{data.in}, použitie by mohlo vyzerať nasledovne:
+
+\begin{c++}
+$ bin/cheetah < data.in
+3
+9.8002 0
+-10 0
+0 10
+\end{c++}
+
+Funkčnosť je ďalej možné rozšíriť prepínačmi, ktoré popíšeme v nasledujúcich 
+sekciach.
+
+\subsection{Vstup zo súboru}
+Prepínač \texttt{-i <názov súboru>} umožní načítať vstup z určeného súboru. Príklad 
+použitia:
+
+\begin{c++}
+$ bin/cheetah -i data.in
+3
+9.8002 0
+-10 0
+0 10
+\end{c++}
+
+\subsection{Výstup do súboru}
+Prepínač \texttt{-o <názov súboru>} presmeruje výstup zo štandarného výstupu do 
+určeného súboru. Príklad použitia:
+
+\begin{c++}
+$ bin/cheetah -i data.in -o data.out
+$ cat data.out
+3
+9.8002 0
+-10 0
+0 10
+\end{c++}
+
+\subsection{Meranie času}
+Prepínač \texttt{-t} na štandardný výstup čas, ktorý zaberie nájdenie obálky. Do 
+času sa nezarátava doba potrebná k načítaniu vstupu, alebo vypísaniu výstupu. 
+Príklad použitia:
+
+\begin{c++}
+$ bin/cheetah -i data.in -o data.out -t
+Execution time: 0.000160927 ms.
+\end{c++}
+\pagebreak
+
+\subsection{Použitie konkrétneho algoritmu}
+Štandardným algoritmom pre riešenie je Quickhull. Na zvolenie iného algoritmu pre 
+riešenie je možné použiť prepínač \texttt{-s <názov algoritmu>}. Dostupné voľby v 
+$\mathbb{R}^2$ a ich asymptotické zložitosti sú:
+
+\begin{itemize}
+ \item \texttt{jarvis} -- Jarvis March ($\mathcal{O}(nh)$)
+ \item \texttt{graham} -- Graham Scan ($\mathcal{O}(n\log n)$)
+ \item \texttt{quickhull} -- Quickhull ($\mathcal{O}(nh)$ najhorší prípad, 
+$\mathcal{O}(n\log n)$ v priemere)
+ \item \texttt{chan} -- Chanov algoritmus ($\mathcal{O}(n\log h)$)
+ \item \texttt{andrew} -- (\emph{experimentálne}) Andrewov algoritmus 
+($\mathcal{O}(n\log n)$)
+\end{itemize}
+
+Pre $\mathbb{R}^3$ je dostupný len algoritmus Jarvis March, ktorý je použitý aj v 
+základe.
+
+\subsection{Voľba dimenzie}
+V základe program používa rovinné algoritmy, dimenziu vstupu je možné špecifikovať 
+prepínačom \texttt{-d <dimenzia>}. Súčasne podporované hodnoty sú 2 a 3.
+
+\subsection{Paralelizácia}
+Aplikácia štandardne púšťa sekvenčné verzie algoritmov, paralelizáciu je možné 
+zapnúť prepína\-čom \texttt{-m <počet vlákien>}. Funguje len v $\mathbb{R}^2$ a 
+maximálny počet vlákien je z dôvodu ochrany stability systému limitovaný na 24. 
+Príklad použitia:
+
+\begin{c++}
+$ bin/cheetah -t -o /dev/null -i bigdata.in -s graham
+Execution time: 0.700449 ms.
+$ bin/cheetah -t -o /dev/null -i bigdata.in -s graham -m 2
+Execution time: 0.467592 ms.
+\end{c++}
+
+\subsection{Test výkonu}
+Výkon je mimo prepínača \texttt{-t} možné otestovať aj priloženým generátorom dát, 
+ktorý dokáže vytvoriť vstup s daným počtom bodov vo vstupnej množine a na obálke. 
+Test sa spúšťa prepínačom \texttt{-p <n> <h> <s> <r> <t>}, kde $n$ je počet bodov vo 
+vstupnej množine ($n \in \mathbb{N}, n < 2^{31}$), $h$ počet bodov na obálke ($h 
+\in \mathbb{N}, h \leq n$), $s$ určuje rozsah súradníc bodov $[-s, s]$ ($s \in 
+\mathbb{N}$), $r$ počet zopakovaní testu ($r \in \mathbb{N}$) (čas sa ráta ako súčet 
+všetkých behov) a $t$ počet vlákien ($t \in \mathbb{N}, 1 \leq t \leq 24$).
+
+Upozorňujeme, že pri veľkom množstve bodov na obálke (typicky nad $5\cdot10^5$) sa 
+začne prejavovať nepresnosť dátového typu \texttt{double} a na nájdených obálkach 
+sa začne objavovať nižší počet bodov ako bol zadaný, čo môže ovplyvniť aj časy 
+výpočtu. Testovač na túto skutočnosť upozorní varovaním. Príklad:
+
+\begin{c++}
+$ bin/cheetah -p 10000000 10 1000 1 1
+Generating test instance...
+...done, running test
+time: 0.586616 ms
+$ bin/cheetah -p 10000000 10000 1000 1 1
+Generating test instance...
+...done, running test
+time: 1.82755 ms
+$ bin/cheetah -p 10000000 1000000 1000 1 1
+Generating test instance...
+...done, running test
+[WARNING] Precision errors occured (h may be too high)
+time: 2.60803 ms
+\end{c++}
+
+\section{Knižnica}
+Modul knižnice umožňuje pridať implementované algoritmy priamo do programov 
+napísaných v jazyku C++. Oproti aplikácií v nej chýbajú výskumne založené 
+vymoženosti ako testovanie rýchlosti, obsahuje však plné možnosti ohľadne výberu 
+algoritmov a paralelizácie.
+
+
+\end{document}
