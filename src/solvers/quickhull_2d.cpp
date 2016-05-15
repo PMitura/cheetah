@@ -8,7 +8,7 @@ Quickhull2D::Quickhull2D()
 {
     name_ = "Quickhull";
     EPS_LOC = 1e-6;
-    variant_ = PARA;
+    variant_ = FORWARD;
     parallelThreshold_ = 100000;
 }
 
@@ -32,22 +32,30 @@ Quickhull2D::Quickhull2D(Variant v, int threshold)
 
 Points2D& Quickhull2D::solve(const Points2D& input, Points2D& output)
 {
+    // temp lower global eps
+    // EPS = 1e-6;
+
     switch (variant_) {
         case NAIVE:
-            return solveSequential(input, output);
+            solveSequential(input, output);
+            break;
         case PRECOMP:
-            return solvePrecomp(input, output);
+            solvePrecomp(input, output);
+            break;
         case FORWARD:
-            return solveForwarded(input, output);
+            solveForwarded(input, output);
+            break;
         case PARA:
-            return solveParallel(input, output);
+            solveParallel(input, output);
+            break;
     }
+
+    // EPS = 1e-12;
+    return output;
+
     // discarded variants
     // return solveNaive(input, output);
     // return solveIterative(input, output);
-    
-    // fallback
-    return solveForwarded(input, output);
 }
 
 void Quickhull2D::recNaive(point_t& a, point_t& b, data_t& plane)
@@ -61,9 +69,9 @@ void Quickhull2D::recNaive(point_t& a, point_t& b, data_t& plane)
     data_t acPlane, cbPlane;
 
     for (auto& pt : plane) {
-        if (orientation(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 2) {
+        if (orientHiEPS(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 2) {
             acPlane.push_back(pt);
-        } else if (orientation(c[0], c[1], b[0], b[1], pt[0], pt[1]) == 2) {
+        } else if (orientHiEPS(c[0], c[1], b[0], b[1], pt[0], pt[1]) == 2) {
             cbPlane.push_back(pt);
         }
     }
@@ -732,9 +740,9 @@ Points2D& Quickhull2D::solveIterative(const Points2D& input, Points2D& output)
             ac -> a = a; ac -> b = c; ac -> save = 0;
             cb -> a = c; cb -> b = b; cb -> save = 0;
             for (auto& pt : curr -> see) {
-                if (orientation(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 1) {
+                if (orientHiEPS(a[0], a[1], c[0], c[1], pt[0], pt[1]) == 1) {
                     ac -> see.push_back(pt);
-                } else if (orientation(c[0], c[1], b[0], b[1],
+                } else if (orientHiEPS(c[0], c[1], b[0], b[1],
                                        pt[0], pt[1]) == 1) {
                     cb -> see.push_back(pt);
                 }
@@ -860,7 +868,7 @@ void Quickhull2D::divideToPlanes(const data_t& input,
                                  data_t& topPlane, data_t& botPlane)
 {
     for (auto& pt : input) {
-        int o = orientation(pivotLeft[0],  pivotLeft[1],
+        int o = orientHiEPS(pivotLeft[0],  pivotLeft[1],
                             pivotRight[0], pivotRight[1],
                             pt[0],         pt[1]);
         if (o == 2) {
@@ -879,7 +887,7 @@ void Quickhull2D::divideToPlanesPara(const data_t& input,
 
 #pragma omp parallel for default(shared) schedule(static)
     for (unsigned i = 0; i < input.size(); i++) {
-        med[i] = orientation(pivotLeft[0],  pivotLeft[1],
+        med[i] = orientHiEPS(pivotLeft[0],  pivotLeft[1],
                              pivotRight[0], pivotRight[1],
                              input[i][0],   input[i][1]);
     }

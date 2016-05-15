@@ -6,7 +6,7 @@ namespace ch
 Chan2D::Chan2D()
 {
     name_ = "Chan";
-    variant_ = GRAHAM;
+    variant_ = PARA_OVER;
 }
 
 Chan2D::Chan2D(Variant v)
@@ -21,9 +21,12 @@ Points2D& Chan2D::solve(const Points2D& input, Points2D& output)
         case JARVIS:
             solver_ = new JarvisScan2D();
             break;
-            break;
         case QUICK:
             solver_ = new Quickhull2D();
+            break;
+        case PARA_ALGO:
+        case PARA_COMBO:
+            solver_ = new GrahamScan2D(GrahamScan2D::PARA);
             break;
         default:
             solver_ = new GrahamScan2D();
@@ -77,18 +80,58 @@ void Chan2D::findHulls(const Points2D& input, std::vector<Points2D>& hulls,
                        unsigned step)
 {
     const data_t& inputData = input.getData();
+
+    // combo variant solver switcher
     if (variant_ == COMBO && step > 500 && !comboFlag_) {
         comboFlag_ = 1;
         delete solver_;
         solver_ = new Quickhull2D();
     }
-    for (unsigned i = 0; i < input.getSize(); i += step) {
-        Points2D part;
-        for (unsigned j = i; j < std::min(i + step, input.getSize()); j++) {
-            part.add(inputData[j]);
-        }
-        hulls.push_back(Points2D());
-        solver_ -> solve(part, hulls.back());
+
+    int bound = ceil((double) input.getSize() / step - EPS);
+    hulls.resize(bound);
+
+    switch (variant_) {
+        case PARA_OVER:
+#pragma omp parallel for default(shared) schedule(static)
+            for (int i = 0; i < bound; i++) {
+                Points2D part;
+                for (unsigned j = i*step; j < std::min((i+1)*step,
+                            input.getSize()); j++) {
+                    part.add(inputData[j]);
+                }
+                if (step < 500) {
+                    GrahamScan2D local;
+                    local.solve(part, hulls[i]);
+                } else {
+                    Quickhull2D local;
+                    local.solve(part, hulls[i]);
+                }
+            }
+            break;
+
+        case PARA_COMBO:
+#pragma omp parallel for default(shared) schedule(static)
+            for (int i = 0; i < bound; i++) {
+                Points2D part;
+                for (unsigned j = i*step; j < std::min((i+1)*step,
+                            input.getSize()); j++) {
+                    part.add(inputData[j]);
+                }
+                GrahamScan2D local(GrahamScan2D::PARA);
+                local.solve(part, hulls[i]);
+            }
+            break;
+
+        default:
+            for (unsigned i = 0; i*step < input.getSize(); i++) {
+                Points2D part;
+                for (unsigned j = i*step; j < std::min((i+1)*step, input.getSize());
+                        j++) {
+                    part.add(inputData[j]);
+                }
+                solver_ -> solve(part, hulls[i]);
+            }
     }
 }
 

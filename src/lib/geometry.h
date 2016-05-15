@@ -8,7 +8,7 @@
 namespace ch
 {
 
-const double EPS = 1e-8;
+const double EPS = 1e-6;
 const double PI  = 3.141592653589793238462643383279;
 
 /** computes angle of line segment ab and x axis */
@@ -129,6 +129,18 @@ inline int orientation(const double& ax, const double& ay,
     if (fabs(cross) < EPS) return 0;  // collinear
     return (cross > EPS) ? 1 : 2; // clockwise or ccw
 }
+
+/** Higher tolerance version */
+inline int orientHiEPS(const double& ax, const double& ay,
+                       const double& bx, const double& by,
+                       const double& cx, const double& cy)
+{
+    double cross = (ax - bx) * (by - cy) - (ay - by) * (bx - cx);
+
+    if (fabs(cross) < 1e-6) return 0;  // collinear
+    return (cross > 1e-6) ? 1 : 2; // clockwise or ccw
+}
+
 
 /** Length of a 3d vector */
 inline double vectLen3d(const point_t& v)

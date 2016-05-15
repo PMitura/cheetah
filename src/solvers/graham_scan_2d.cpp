@@ -6,7 +6,7 @@ namespace ch
 GrahamScan2D::GrahamScan2D()
 {
     name_ = "Graham Scan";
-    variant_ = PARA_LIN_STABLE;
+    variant_ = PARA_LIN;
 }
 
 GrahamScan2D::GrahamScan2D(Variant v)

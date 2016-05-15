@@ -12,7 +12,9 @@
 #include "lib/generator.h"
 #include "lib/structures.h"
 #include "solvers/solver_2d.h"
+#include "solvers/solver_3d.h"
 #include "solvers/jarvis_scan_2d.h"
+#include "solvers/jarvis_scan_3d.h"
 #include "solvers/graham_scan_2d.h"
 #include "solvers/monotone_chain_2d.h"
 #include "solvers/quickhull_2d.h"
@@ -116,10 +118,14 @@ class PerfTest
          */
         void printPoints(Points2D& points, std::ofstream& output);
 
+        void d3tests();
+
         /** File for logging results */
         std::ofstream logFile_;
 
+
         Points2D * globIn_;
+        int counter_;
 
 };
 
