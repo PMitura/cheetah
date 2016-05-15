@@ -12,8 +12,8 @@ typedef std::vector<point_t> data_t;
 typedef std::pair<double, double> point2d_t;
 
 // debug macro, should not appear in relase
-#define D(X) // std::cout<<"  "<<#X": "<<X<<std::endl;
-#define R(X) // std::cout<<"  "<<X<<std::endl;
+#define D(X) std::cout<<"  "<<#X": "<<X<<std::endl;
+#define R(X) std::cout<<"  "<<X<<std::endl;
 
 const unsigned MAX_NUM_THREADS = 24;
 
