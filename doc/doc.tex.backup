@@ -161,7 +161,7 @@ Príklad použitia:
 
 \begin{c++}
 $ bin/cheetah -i data.in -o data.out -t
-Execution time: 0.000160927 ms.
+Execution time: 0.000160927 s.
 \end{c++}
 \pagebreak
 
@@ -195,9 +195,9 @@ Príklad použitia:
 
 \begin{c++}
 $ bin/cheetah -t -o /dev/null -i bigdata.in -s graham
-Execution time: 0.700449 ms.
+Execution time: 0.700449 s.
 $ bin/cheetah -t -o /dev/null -i bigdata.in -s graham -m 2
-Execution time: 0.467592 ms.
+Execution time: 0.467592 s.
 \end{c++}
 
 \subsection{Test výkonu}
@@ -218,16 +218,16 @@ výpočtu. Testovač na túto skutočnosť upozorní varovaním. Príklad:
 $ bin/cheetah -p 10000000 10 1000 1 1
 Generating test instance...
 ...done, running test
-time: 0.586616 ms
+time: 0.586616 s
 $ bin/cheetah -p 10000000 10000 1000 1 1
 Generating test instance...
 ...done, running test
-time: 1.82755 ms
+time: 1.82755 s
 $ bin/cheetah -p 10000000 1000000 1000 1 1
 Generating test instance...
 ...done, running test
 [WARNING] Precision errors occured (h may be too high)
-time: 2.60803 ms
+time: 2.60803 s
 \end{c++}
 
 \section{Knižnica}
@@ -235,6 +235,125 @@ Modul knižnice umožňuje pridať implementované algoritmy priamo do programov
 napísaných v jazyku C++. Oproti aplikácií v nej chýbajú výskumne založené 
 vymoženosti ako testovanie rýchlosti, obsahuje však plné možnosti ohľadne výberu 
 algoritmov a paralelizácie.
+
+\subsection{Použitie}
+Knižnica je kompilovaná pre statické linkovanie s cieľovou aplikáciou. Pri 
+kompilácií výsledku je nutné použiť minimálne prepínače \texttt{-std=c++11} a 
+\texttt{-fopenmp}. Ďalej je nutné direktívami \texttt{-I} a \texttt{-L} špecifikovať 
+cestu k hlavičkovým súborom a knižnici a prepínačom \texttt{-lcheetah} povoliť 
+linkovanie. Funkcie knižnice sa nachádzajú v hlavičkovom súbore 
+\texttt{cheetah/core.h}
+
+K lepšiemu pochopeniu poslúži ukážková aplikácia využívajúca našu knižnicu. Do 
+koreňového adresára najprv vložíme skompilovaný súbor \texttt{libcheetah.a} a 
+adresár {include}. Potom vytvoríme nasledovný súbor \texttt{main.cpp}:
+
+\begin{c++}
+#include <iostream>
+#include "cheetah/core.h"
+
+int main() {
+    ch::Points2D input, output;
+    input.add({10, 0});
+    input.add({-10, 0});
+    input.add({0, 10});
+    input.add({1, 1});
+    ch::findHull(input, output);
+    std::cout << output.getSize() << std::endl;
+    return 0;
+}
+\end{c++}
+
+\emph{(Fungovanie jednotlivých funkcií a dátových štruktúr vysvetlíme ďalej v tejto 
+sekcií)}
+
+Kompiláciu a spustenie potom môžeme realizovať nasledovnou sekvenciou príkazov:
+
+\begin{c++}
+$ g++ -std=c++11 -fopenmp -I include/ -L . main.cpp -lcheetah -o sample
+$ ./sample 
+3
+\end{c++}
+
+\subsection{Dátové štruktúry}
+Pre reprezentáciu množín bodov sú použité dátové štruktúry \texttt{ch::Points2D} a 
+\texttt{ch::Points3D}. Obe disponujú metódou
+
+\begin{c++}
+const std::vector<std::vector<double>>& getData() const;
+\end{c++}
+
+ktorá vráti konštantnú referenciu na ich vnútornú dátovú reprezentáciu, z ktorej je 
+možné čítať ich obsah. Pre pridávanie bodov slúži funkcia:
+
+\begin{c++}
+bool add(std::vector<double> point);
+\end{c++}
+
+ktorá vráti \texttt{false} v prípade, že sa počet súradníc v posielanom vektore 
+nezhoduje s počtom dimenzií danej množiny (a daný bod potom nie je ani pridaný do 
+množiny).
+
+Nakoniec majú ešte obe štruktúry metódu \texttt{getSize}, ktorá vŕati počet bodov v 
+nich. 
+
+Pre reprentáciu konvexného mnohostena, ktorý je výstupom hľadania obálky v troch 
+rozmerov je štruktúra \textit{ch::Polyhedron}. Tá je reprezentovaná ako 
+\texttt{std::vector<ch::Points3D>}, teda ako vektor stien, ktoré sú uložené ako 
+zoznam vrcholov. K tejto reprezentácií sa analogicky dá pristúpiť metódou 
+\textit{getFaces}, pre vkladanie bodov slúži metóda \texttt{addFace(ch::Points3D)}.
+
+\subsection{Funkcie}
+V tejto sekcií uvedieme zoznam funkcií, ktoré sprístupňuje hlavičkový súbor 
+\texttt{core.h} a popis ich použitia. Všetky funkcie sú súčasťou menného priestoru 
+\textit{ch} a je ich potrebné volať so zodpovedajúcou predponou.
+
+\subsubsection{Nájdenie obálky}
+Nájdenie obálky v $\mathbb{R}^2$ pomocou algoritmu Quickhull.
+
+\begin{c++}
+Points2D& findHull(const Points2D& input, Points2D& output);
+\end{c++}
+
+\begin {itemize}
+ \item \textbf{parameter \textit{input}} -- Referencia na vstupnú sadu bodov. 
+ \item \textbf{parameter \textit{output}} -- Referencia na výstupnú dátovú 
+štruktúru, do ktorej bude vložený zoznam bodov tvoriacich obálku, zoradenú proti 
+smeru hodinových ručičiek.
+ \item \textbf{návratová hodnota} -- Rovnaká ako \texttt{output}.
+\end {itemize}
+
+\subsubsection{Nájdenie obálky s voľbou algoritmu}
+
+Nájdenie obálky v $\mathbb{R}^2$ pomocou zvoleného algoritmu:
+
+\begin{c++}
+Points2D& findHull(const Points2D& input, Points2D& output, SolverType type);
+\end{c++}
+
+\begin{itemize}
+ \item \textbf{parameter \textit{input}} -- Referencia na vstupnú sadu bodov. 
+ \item \textbf{parameter \textit{output}} -- Referencia na výstupnú dátovú 
+štruktúru, do ktorej bude vložený zoznam bodov tvoriacich obálku, zoradenú proti 
+smeru hodinových ručičiek.
+ \item \textbf{parameter \textit{input}} -- Označenie zvoleného algoritmu. Dostupné 
+voľby:
+\begin{itemize}
+ \item \texttt{ch::JARVIS}
+ \item \texttt{ch::GRAHAM}
+ \item \texttt{ch::QUICKHULL}
+ \item \texttt{ch::CHAN}
+ \item \texttt{ch::ANDREW} \emph{(experimentálny)}
+\end {itemize}
+ \item \textbf{návratová hodnota} -- Rovnaká ako \texttt{output}.
+
+\end {itemize}
+
+\subsubsection{Paralelné nájdenie obálky}
+\subsubsection{Paralelné nájdenie obálky s voľbou algoritmu}
+\subsubsection{Nájdenie obálky v 3D}
+\subsubsection{Aproximácia obálky (experimentálne)}
+
 
 
 \end{document}

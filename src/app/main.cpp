@@ -5,7 +5,7 @@
 
 #include "app/perftest.h"
 
-#include "lib/lib.h"
+#include "cheetah/core.h"
 #include "lib/structures.h"
 
 #include "solvers/chan_2d.h"
@@ -307,7 +307,7 @@ int main(int argc, char ** argv)
             ch::PerfTest ptest;
             double perf = ptest.runTest(instance[0], instance[1],
                     instance[2], instance[3], instance[4], sType);
-            std::cout << "time: " << perf << std::endl;
+            std::cout << "time: " << perf << " s" << std::endl;
             return 0;
         }
 
@@ -339,7 +339,7 @@ int main(int argc, char ** argv)
         }
         double timeB = omp_get_wtime();
         if (displayTime) {
-            std::cout << "Execution time: " << timeB - timeA << " ms." << std::endl;
+            std::cout << "Execution time: " << timeB - timeA << " s." << std::endl;
         }
 
         if (useFileOutput) {
@@ -395,7 +395,7 @@ int main(int argc, char ** argv)
         findHull3D(input, output);
         double timeB = omp_get_wtime();
         if (displayTime) {
-            std::cout << "Execution time: " << timeB - timeA << " ms." << std::endl;
+            std::cout << "Execution time: " << timeB - timeA << " s." << std::endl;
         }
 
         if (useFileOutput) {

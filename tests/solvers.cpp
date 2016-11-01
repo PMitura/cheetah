@@ -12,7 +12,6 @@
 #include "solvers/quickhull_2d.h"
 #include "solvers/chan_2d.h"
 #include "solvers/jarvis_scan_3d.h"
-#include "solvers/quickhull_3d.h"
 
 void printHull2D(ch::Points2D& points, std::ostream& out)
 {

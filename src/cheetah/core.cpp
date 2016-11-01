@@ -1,4 +1,4 @@
-#include "lib/lib.h"
+#include "cheetah/core.h"
 
 namespace ch
 {

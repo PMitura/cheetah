@@ -247,7 +247,6 @@ Points2D& Quickhull2D::solveSequential(const Points2D& input, Points2D& output)
         double o = cross(pivotLeft[0],  pivotLeft[1],
                          pivotRight[0], pivotRight[1],
                          pt[0],         pt[1]);
-        // double o = partCross(pt[0], pt[1], alpha, beta, gamma);
         if (o < -EPS_LOC) {
             topPlane.push_back(pt);
             if (fabs(o) > topMax) {

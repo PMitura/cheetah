@@ -7,7 +7,7 @@
 #include <ctime>
 #include <omp.h>
 
-#include "lib/lib.h"
+#include "cheetah/core.h"
 
 #include "approximators/approximator2d.h"
 #include "approximators/bfp2d.h"
