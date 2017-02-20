@@ -5,7 +5,7 @@ namespace ch
 
 JarvisScan3D::JarvisScan3D()
 {
-    // fixed value is the lesser evil here, relative epsilon causes all sorts
+    // fixed EPS is the lesser evil here, relative epsilon causes all sorts
     // of weird behavior
     name_ = "3D Jarvis";
     EPS_LOC = 1e-6;
@@ -122,7 +122,7 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
 
         // PROBLEM
         // this returns all points on faces, but I only need their convex hull
-        // we need a way to find convex hull od points on plane, but in 3d
+        // we need a way to find convex hull of points on plane, but in 3d
         
         // POSSIBLE SOLUTION
         // eliminate one non-zero coordinate
@@ -175,7 +175,7 @@ Polyhedron& JarvisScan3D::solveNaive(const Points3D& input, Polyhedron& output)
             }
         }
 
-        // add new found fresh to list, remove already found ones
+        // add new found edges to list, remove already found ones
         for (unsigned i = 0; i < fs; i++) {
             unsigned ex = onPlane[faceID[i]],
                      ey = onPlane[faceID[(i+1) % fs]];
@@ -234,7 +234,7 @@ std::pair<unsigned, unsigned> JarvisScan3D::findInitial(const data_t& input)
     srand(time(NULL));
     int rndx, rndy, rndz;
     double maxd;
-    unsigned far, farcnt;
+    unsigned far;
 
     // find farthest point in downwards direction
     far = 0;

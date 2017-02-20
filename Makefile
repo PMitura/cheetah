@@ -6,9 +6,10 @@ SRCDIR := src
 BUILDDIR := build
 MODULES := app approximators cheetah lib solvers
 MKBDIR := $(addprefix build/, $(MODULES))
-TARGET := bin/$(NAME)
-LIBTARGET := bin/$(LIBNAME)
-LIBINCL := bin/include
+TARGETDIR := bin
+TARGET := $(TARGETDIR)/$(NAME)
+LIBTARGET := $(TARGETDIR)/$(LIBNAME)
+LIBINCL := $(TARGETDIR)/include
 LIBMODULES := $(addprefix $(LIBINCL)/,$(MODULES))
 
 SRCEXT := cpp
@@ -24,12 +25,13 @@ INC := -I src
 TESTDIR := tests
 TESTSRCS := $(shell find $(TESTDIR) -type f -name *.$(SRCEXT))
 TESTOBJS := $(patsubst $(TESTDIR)/%,$(BUILDDIR)/$(TESTDIR)/%,$(TESTSRCS:.$(SRCEXT)=.o))
-TESTTARGET := bin/tests
+TESTTARGET := $(TARGETDIR)/tests
 TESTLIB := -lgtest -lgtest_main -lpthread
 TESTFLAG :=
 
 $(TARGET): $(OBJECTS)
 	@echo " Linking..."
+	@mkdir -p $(TARGETDIR)
 	$(CC) $^ -o $(TARGET) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
@@ -49,19 +51,21 @@ $(HEADERS): $(LIBMODULES)
 
 linklib: $(OBJECTS)
 	@echo " Linking to static library..."
+	@mkdir -p $(TARGETDIR)
 	ar rcs $(LIBTARGET) $^
 
 lib: linklib $(HEADERS)
 
 clean:
 	@echo " Cleaning...";
-	rm -rf $(BUILDDIR) $(TARGET) $(LIBTARGET) $(LIBINCL)
+	rm -rf $(BUILDDIR) $(TARGETDIR) $(LIBTARGET) $(LIBINCL)
 
 run: $(TARGET)
 	$(TARGET)
 
 test: $(TESTOBJS) $(OBJECTS)
 	@echo " Running tests..."
+	@mkdir -p $(TARGETDIR)
 	$(CC) $^ -o $(TESTTARGET) $(LIB) $(TESTLIB)
 	$(TESTTARGET)
 
